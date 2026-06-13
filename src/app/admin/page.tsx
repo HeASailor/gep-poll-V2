@@ -102,6 +102,15 @@ export default function AdminPage() {
     if (!error && data) { setSessions([...sessions, data]); setNewTitle(''); setNewDesc(''); setCreating(false) }
   }
 
+  async function resetSession(id: string) {
+    const msg = lang === "id" ? "Reset sesi ini? Semua respons dan peserta akan dihapus." : "Reset this session? All responses and participants will be deleted."
+    if (!window.confirm(msg)) return
+    await supabase.from("responses").delete().eq("session_id", id)
+    await supabase.from("participants").delete().eq("session_id", id)
+    await supabase.from("sessions").update({ status: "draft", current_question_index: 0, started_at: null, ended_at: null }).eq("id", id)
+    fetchSessions()
+  }
+
   async function deleteSession(id: string) {
     if (!confirm(lang === 'id' ? 'Hapus sesi ini?' : 'Delete this session?')) return
     await supabase.from('sessions').delete().eq('id', id)
@@ -223,6 +232,7 @@ export default function AdminPage() {
                   <Link href={'/admin/session/' + s.id} className="btn-primary text-sm py-1.5 px-3">
                     {s.status === 'draft' ? t.edit : t.manage}
                   </Link>
+                  <button onClick={() => resetSession(s.id)} className="text-xs px-2 py-1.5 rounded-lg border border-amber-400 text-amber-600 hover:bg-amber-50 transition-colors">↺ Reset</button>
                   {s.status !== 'active' && (
                     <button onClick={() => deleteSession(s.id)} className="btn-danger text-sm py-1.5 px-3">{t.delete}</button>
                   )}
