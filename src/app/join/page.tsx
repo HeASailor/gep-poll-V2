@@ -103,11 +103,12 @@ export default function JoinPage() {
     }
   }, [])
 
-  const syncSession = useCallback(async (s: any) => {
+  const syncSession = useCallback(async (s: any, pid?: string) => {
     const { data: qs } = await supabase.from('questions').select('*, options(*)').eq('session_id', s.id).order('order_index')
     if (qs) setQuestions(qs)
     if (s.status === 'ended') {
-      if (qs && participantId) await calcFinalScore(s.id, participantId, qs)
+      const activePid = pid || participantId
+      if (qs && activePid) await calcFinalScore(s.id, activePid, qs)
       setScreen('ended')
       return
     }
@@ -158,7 +159,7 @@ export default function JoinPage() {
     if (!p) { setError(t.errorJoin); return }
     setSession(s)
     setParticipantId(p.id)
-    if (s.status === 'active') await syncSession(s)
+    if (s.status === 'active') await syncSession(s, p.id)
     else setScreen('waiting')
   }
 
@@ -288,7 +289,7 @@ export default function JoinPage() {
             <div className="space-y-2">
               {opts.map((o: any) => (
                 <button key={o.id}
-                  onClick={() => { if (!alreadyAnswered && !timesUp) setSelectedAnswer(o.option_index) }}
+                  onClick={() => { if (!alreadyAnswered && timeLeft !== 0) setSelectedAnswer(o.option_index) }}
                   className={`w-full text-left p-3 rounded-xl border-2 text-sm font-medium transition-all ${selectedAnswer === o.option_index ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-700'} ${alreadyAnswered || timesUp ? 'opacity-60 cursor-not-allowed' : 'hover:border-blue-300 cursor-pointer'}`}>
                   <span className="font-bold mr-2">{String.fromCharCode(65 + o.option_index)}.</span>{o.option_text}
                 </button>
@@ -300,7 +301,7 @@ export default function JoinPage() {
               <div className="flex gap-2 justify-between mb-2">
                 {[1,2,3,4,5].map((n: number) => (
                   <button key={n}
-                    onClick={() => { if (!alreadyAnswered && !timesUp) setSelectedAnswer(n) }}
+                    onClick={() => { if (!alreadyAnswered && timeLeft !== 0) setSelectedAnswer(n) }}
                     className={`flex-1 aspect-square rounded-xl text-xl font-bold border-2 transition-all ${selectedAnswer === n ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-200 text-gray-700'} ${alreadyAnswered || timesUp ? 'opacity-60 cursor-not-allowed' : 'hover:border-blue-300 cursor-pointer'}`}>
                     {n}
                   </button>
