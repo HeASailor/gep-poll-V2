@@ -24,6 +24,8 @@ const T = {
     canChange: 'Anda dapat mengubah pilihan sebelum submit',
     disagree: 'Sangat Tidak Setuju', agree: 'Sangat Setuju',
     writeAnswer: 'Tulis jawaban Anda di sini...', qOf: 'Pertanyaan',
+    yourScore: 'Skor Anda', pass: 'LULUS', fail: 'TIDAK LULUS',
+    sessionLabel: 'Sesi',
   },
   en: {
     title: 'GEP Poll', subtitle: 'Pertamina Phase 5 Training',
@@ -43,6 +45,8 @@ const T = {
     canChange: 'You can change your answer before submitting',
     disagree: 'Strongly Disagree', agree: 'Strongly Agree',
     writeAnswer: 'Write your answer here...', qOf: 'Question',
+    yourScore: 'Your Score', pass: 'PASS', fail: 'FAIL',
+    sessionLabel: 'Session',
   }
 }
 
@@ -60,6 +64,7 @@ export default function JoinPage() {
   const [answeredQIds, setAnsweredQIds] = useState<Set<string>>(new Set([]))
   const [submitting, setSubmitting] = useState(false)
   const [timeLeft, setTimeLeft] = useState<number | null>(null)
+  const [finalScore, setFinalScore] = useState<{score: number, total: number} | null>(null)
   const { lang } = useLang()
   const t = T[lang as keyof typeof T]
 
@@ -86,10 +91,26 @@ export default function JoinPage() {
     return () => clearTimeout(t2)
   }, [timeLeft, currentQ, answeredQIds, participantId, session, selectedAnswer, textAnswer])
 
+  const calcFinalScore = useCallback(async (sessionId: string, pid: string, qs: any[]) => {
+    const { data: myResponses } = await supabase.from('responses').select('*').eq('session_id', sessionId).eq('participant_id', pid)
+    if (myResponses) {
+      let correct = 0
+      qs.forEach((q: any) => {
+        const r = myResponses.find((r: any) => r.question_id === q.id)
+        if (r && r.answer_index === q.correct_option_index) correct++
+      })
+      setFinalScore({ score: correct, total: qs.length })
+    }
+  }, [])
+
   const syncSession = useCallback(async (s: any) => {
     const { data: qs } = await supabase.from('questions').select('*, options(*)').eq('session_id', s.id).order('order_index')
     if (qs) setQuestions(qs)
-    if (s.status === 'ended') { setScreen('ended'); return }
+    if (s.status === 'ended') {
+      if (qs && participantId) await calcFinalScore(s.id, participantId, qs)
+      setScreen('ended')
+      return
+    }
     if (s.status === 'active' && qs) {
       const q = qs[s.current_question_index]
       setCurrentQ(q || null)
@@ -106,7 +127,7 @@ export default function JoinPage() {
         }
       }
     }
-  }, [])
+  }, [participantId, calcFinalScore])
 
   useEffect(() => {
     if (!session) return
@@ -135,7 +156,8 @@ export default function JoinPage() {
     if (s.status === 'ended') { setError(t.errorEnded); return }
     const { data: p } = await supabase.from('participants').insert({ session_id: s.id, display_name: name.trim() }).select().single()
     if (!p) { setError(t.errorJoin); return }
-    setSession(s); setParticipantId(p.id)
+    setSession(s)
+    setParticipantId(p.id)
     if (s.status === 'active') await syncSession(s)
     else setScreen('waiting')
   }
@@ -166,10 +188,12 @@ export default function JoinPage() {
           <LangToggle />
         </div>
         <div className="space-y-3">
-          <div><label className="label">{t.nameLabel}</label>
+          <div>
+            <label className="label">{t.nameLabel}</label>
             <input className="input text-center text-lg" value={name} onChange={e => setName(e.target.value)} placeholder={t.namePlaceholder} onKeyDown={e => e.key === 'Enter' && joinSession()} />
           </div>
-          <div><label className="label">{t.codeLabel}</label>
+          <div>
+            <label className="label">{t.codeLabel}</label>
             <input className="input text-center text-3xl font-mono tracking-widest" maxLength={4} value={roomCode} onChange={e => setRoomCode(e.target.value.replace(/\D/g, ''))} placeholder="0000" onKeyDown={e => e.key === 'Enter' && joinSession()} />
           </div>
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
@@ -186,6 +210,11 @@ export default function JoinPage() {
         <div className="text-4xl mb-4">⏳</div>
         <h2 className="text-xl font-semibold text-gray-800 mb-2">{t.waiting}</h2>
         <p className="text-gray-500 text-sm">Halo <strong>{name}</strong>! {t.waitingDesc}</p>
+        {session && (
+          <div className="mt-3 bg-blue-50 rounded-lg px-4 py-2 text-sm text-blue-700 font-medium">
+            {t.sessionLabel}: {session.title}
+          </div>
+        )}
         <div className="mt-4 flex justify-center gap-1">
           <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay:'0ms'}} />
           <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay:'150ms'}} />
@@ -203,7 +232,14 @@ export default function JoinPage() {
         <h2 className="text-xl font-semibold text-gray-800 mb-2">{t.ended}</h2>
         <p className="text-gray-500 text-sm">{t.endedDesc}, <strong>{name}</strong>.</p>
         <p className="text-gray-400 text-xs mt-2">{answeredQIds.size} {t.answered}.</p>
-        <button onClick={() => { setScreen('join'); setSession(null); setParticipantId(null); setAnsweredQIds(new Set([])) }}
+        {finalScore && (
+          <div className={`mt-4 p-4 rounded-xl font-bold text-xl ${finalScore.score / finalScore.total >= 0.7 ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-600 border border-red-200'}`}>
+            <div>{t.yourScore}: {finalScore.score}/{finalScore.total}</div>
+            <div className="text-2xl mt-1">{finalScore.score / finalScore.total >= 0.7 ? t.pass + ' ✅' : t.fail + ' ❌'}</div>
+            <div className="text-sm font-normal mt-1 opacity-70">{Math.round(finalScore.score / finalScore.total * 100)}%</div>
+          </div>
+        )}
+        <button onClick={() => { setScreen('join'); setSession(null); setParticipantId(null); setAnsweredQIds(new Set([])); setFinalScore(null) }}
           className="btn-primary mt-4 w-full">{t.backHome}</button>
       </div>
     </div>
