@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useLang, LangToggle } from '@/lib/lang'
 
 type Screen = 'join' | 'waiting' | 'question' | 'submitted' | 'ended'
 
@@ -19,9 +20,10 @@ const T = {
     submitted: 'Jawaban Terkirim!', submittedDesc: 'Menunggu pertanyaan berikutnya...',
     mcq: 'Pilihan Ganda', rating: 'Rating', open: 'Teks Terbuka',
     sendAnswer: 'Kirim Jawaban', sending: 'Mengirim...', alreadySent: 'Jawaban Terkirim',
+    timesUp: 'Waktu Habis!', autoSubmitted: 'Waktu habis! Jawaban otomatis terkirim.',
+    canChange: 'Anda dapat mengubah pilihan sebelum submit',
     disagree: 'Sangat Tidak Setuju', agree: 'Sangat Setuju',
-    writeAnswer: 'Tulis jawaban Anda di sini...',
-    qOf: 'Pertanyaan',
+    writeAnswer: 'Tulis jawaban Anda di sini...', qOf: 'Pertanyaan',
   },
   en: {
     title: 'GEP Poll', subtitle: 'Pertamina Phase 5 Training',
@@ -37,9 +39,10 @@ const T = {
     submitted: 'Answer Submitted!', submittedDesc: 'Waiting for next question...',
     mcq: 'Multiple Choice', rating: 'Rating', open: 'Open Text',
     sendAnswer: 'Submit Answer', sending: 'Submitting...', alreadySent: 'Answer Submitted',
+    timesUp: "Time's Up!", autoSubmitted: "Time is up! Answer auto-submitted.",
+    canChange: 'You can change your answer before submitting',
     disagree: 'Strongly Disagree', agree: 'Strongly Agree',
-    writeAnswer: 'Write your answer here...',
-    qOf: 'Question',
+    writeAnswer: 'Write your answer here...', qOf: 'Question',
   }
 }
 
@@ -57,32 +60,51 @@ export default function JoinPage() {
   const [answeredQIds, setAnsweredQIds] = useState<Set<string>>(new Set([]))
   const [submitting, setSubmitting] = useState(false)
   const [timeLeft, setTimeLeft] = useState<number | null>(null)
-  const [lang, setLang] = useState<'id' | 'en'>('id')
-  const t = T[lang]
+  const { lang } = useLang()
+  const t = T[lang as keyof typeof T]
 
-  const LangToggle = () => (
-    <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-      <button onClick={() => setLang('id')} className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${lang === 'id' ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500'}`}>🇮🇩 ID</button>
-      <button onClick={() => setLang('en')} className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${lang === 'en' ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500'}`}>🇬🇧 EN</button>
-    </div>
-  )
+  useEffect(() => {
+    if (timeLeft === null) return
+    if (timeLeft <= 0) {
+      if (currentQ && !answeredQIds.has(currentQ.id) && participantId && session) {
+        const autoSubmit = async () => {
+          const payload: any = { question_id: currentQ.id, participant_id: participantId, session_id: session.id }
+          if (currentQ.question_type === 'mcq') payload.answer_index = selectedAnswer
+          else if (currentQ.question_type === 'rating') payload.rating_value = selectedAnswer
+          else payload.answer_text = textAnswer || ''
+          await supabase.from('responses').upsert(payload, { onConflict: 'question_id,participant_id' })
+          const s = new Set(Array.from(answeredQIds))
+          s.add(currentQ.id)
+          setAnsweredQIds(s)
+          setScreen('submitted')
+        }
+        autoSubmit()
+      }
+      return
+    }
+    const t2 = setTimeout(() => setTimeLeft(prev => prev !== null ? prev - 1 : null), 1000)
+    return () => clearTimeout(t2)
+  }, [timeLeft, currentQ, answeredQIds, participantId, session, selectedAnswer, textAnswer])
 
   const syncSession = useCallback(async (s: any) => {
     const { data: qs } = await supabase.from('questions').select('*, options(*)').eq('session_id', s.id).order('order_index')
     if (qs) setQuestions(qs)
     if (s.status === 'ended') { setScreen('ended'); return }
-    // Sync timer
-    if (s.timer_started_at) {
-      const elapsed = Math.floor((Date.now() - new Date(s.timer_started_at).getTime()) / 1000)
-      const remaining = (s.timer_duration || 30) - elapsed
-      setTimeLeft(remaining > 0 ? remaining : 0)
-    } else {
-      setTimeLeft(null)
-    }
     if (s.status === 'active' && qs) {
       const q = qs[s.current_question_index]
       setCurrentQ(q || null)
-      if (q) { setScreen('question'); setSelectedAnswer(null); setTextAnswer('') }
+      if (q) {
+        setScreen('question')
+        setSelectedAnswer(null)
+        setTextAnswer('')
+        if (s.timer_started_at) {
+          const elapsed = Math.floor((Date.now() - new Date(s.timer_started_at).getTime()) / 1000)
+          const remaining = (s.timer_duration || 30) - elapsed
+          setTimeLeft(remaining > 0 ? remaining : 0)
+        } else {
+          setTimeLeft(null)
+        }
+      }
     }
   }, [])
 
@@ -90,7 +112,9 @@ export default function JoinPage() {
     if (!session) return
     const ch = supabase.channel('participant-' + session.id)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sessions', filter: `id=eq.${session.id}` },
-        ({ new: updated }: any) => { setSession(updated); syncSession(updated)
+        ({ new: updated }: any) => {
+          setSession(updated)
+          syncSession(updated)
           if (updated.timer_started_at) {
             const elapsed = Math.floor((Date.now() - new Date(updated.timer_started_at).getTime()) / 1000)
             const remaining = (updated.timer_duration || 30) - elapsed
@@ -102,12 +126,6 @@ export default function JoinPage() {
       .subscribe()
     return () => { supabase.removeChannel(ch) }
   }, [session, syncSession])
-
-  useEffect(() => {
-    if (timeLeft === null || timeLeft <= 0) return
-    const t = setTimeout(() => setTimeLeft(prev => prev !== null ? prev - 1 : null), 1000)
-    return () => clearTimeout(t)
-  }, [timeLeft])
 
   async function joinSession() {
     setError('')
@@ -130,8 +148,11 @@ export default function JoinPage() {
     else if (currentQ.question_type === 'rating') payload.rating_value = selectedAnswer
     else payload.answer_text = textAnswer
     await supabase.from('responses').upsert(payload, { onConflict: 'question_id,participant_id' })
-    const s = new Set(Array.from(answeredQIds)); s.add(currentQ.id); setAnsweredQIds(s)
-    setSubmitting(false); setScreen('submitted')
+    const s = new Set(Array.from(answeredQIds))
+    s.add(currentQ.id)
+    setAnsweredQIds(s)
+    setSubmitting(false)
+    setScreen('submitted')
   }
 
   if (screen === 'join') return (
@@ -205,9 +226,9 @@ export default function JoinPage() {
 
   if (screen === 'question' && currentQ) {
     const alreadyAnswered = answeredQIds.has(currentQ.id)
+    const timesUp = timeLeft === 0
     const opts = currentQ.options?.sort((a: any, b: any) => a.option_index - b.option_index) || []
     const typeLabel = currentQ.question_type === 'mcq' ? t.mcq : currentQ.question_type === 'rating' ? t.rating : t.open
-
     return (
       <div className="min-h-screen flex flex-col p-4 max-w-lg mx-auto">
         <div className="flex items-center justify-between mb-4 text-sm text-gray-500">
@@ -220,16 +241,19 @@ export default function JoinPage() {
             {typeLabel}
           </div>
           {timeLeft !== null && (
-            <div className={`text-center text-4xl font-bold font-mono mb-4 ${timeLeft <= 10 ? 'text-red-600' : 'text-blue-700'}`}>
-              {timeLeft}s
+            <div className={`text-center text-5xl font-bold font-mono mb-3 ${timeLeft <= 10 ? 'text-red-600' : 'text-blue-700'}`}>
+              {timesUp ? '⏰' : timeLeft + 's'}
             </div>
           )}
-          <h2 className="text-lg font-semibold text-gray-800 mb-5">{currentQ.question_text}</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">{currentQ.question_text}</h2>
+          {!alreadyAnswered && !timesUp && <p className="text-xs text-gray-400 mb-3">💡 {t.canChange}</p>}
+          {timesUp && !alreadyAnswered && <p className="text-xs text-red-500 mb-3 font-semibold">⏰ {t.autoSubmitted}</p>}
           {currentQ.question_type === 'mcq' && (
             <div className="space-y-2">
               {opts.map((o: any) => (
-                <button key={o.id} disabled={alreadyAnswered} onClick={() => setSelectedAnswer(o.option_index)}
-                  className={`w-full text-left p-3 rounded-xl border-2 text-sm font-medium transition-all ${selectedAnswer === o.option_index ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-200 hover:border-blue-300 text-gray-700'} ${alreadyAnswered ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
+                <button key={o.id}
+                  onClick={() => { if (!alreadyAnswered && !timesUp) setSelectedAnswer(o.option_index) }}
+                  className={`w-full text-left p-3 rounded-xl border-2 text-sm font-medium transition-all ${selectedAnswer === o.option_index ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-700'} ${alreadyAnswered || timesUp ? 'opacity-60 cursor-not-allowed' : 'hover:border-blue-300 cursor-pointer'}`}>
                   <span className="font-bold mr-2">{String.fromCharCode(65 + o.option_index)}.</span>{o.option_text}
                 </button>
               ))}
@@ -238,27 +262,31 @@ export default function JoinPage() {
           {currentQ.question_type === 'rating' && (
             <div>
               <div className="flex gap-2 justify-between mb-2">
-                {[1,2,3,4,5].map(n => (
-                  <button key={n} disabled={alreadyAnswered} onClick={() => setSelectedAnswer(n)}
-                    className={`flex-1 aspect-square rounded-xl text-xl font-bold border-2 transition-all ${selectedAnswer === n ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-200 hover:border-blue-300 text-gray-700'} ${alreadyAnswered ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
+                {[1,2,3,4,5].map((n: number) => (
+                  <button key={n}
+                    onClick={() => { if (!alreadyAnswered && !timesUp) setSelectedAnswer(n) }}
+                    className={`flex-1 aspect-square rounded-xl text-xl font-bold border-2 transition-all ${selectedAnswer === n ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-200 text-gray-700'} ${alreadyAnswered || timesUp ? 'opacity-60 cursor-not-allowed' : 'hover:border-blue-300 cursor-pointer'}`}>
                     {n}
                   </button>
                 ))}
               </div>
-              <div className="flex justify-between text-xs text-gray-400 mt-1">
-                <span>{t.disagree}</span><span>{t.agree}</span>
-              </div>
+              <div className="flex justify-between text-xs text-gray-400 mt-1"><span>{t.disagree}</span><span>{t.agree}</span></div>
             </div>
           )}
           {currentQ.question_type === 'open' && (
-            <textarea className="input" rows={4} value={textAnswer} onChange={e => setTextAnswer(e.target.value)} disabled={alreadyAnswered} placeholder={t.writeAnswer} />
+            <textarea className="input" rows={4} value={textAnswer}
+              onChange={e => { if (!alreadyAnswered && !timesUp) setTextAnswer(e.target.value) }}
+              disabled={alreadyAnswered || timesUp} placeholder={t.writeAnswer} />
           )}
         </div>
         <div className="mt-4">
           {alreadyAnswered ? (
             <div className="btn-primary w-full text-center opacity-60 cursor-not-allowed py-3">✓ {t.alreadySent}</div>
+          ) : timesUp ? (
+            <div className="w-full text-center py-3 bg-red-50 text-red-600 rounded-xl font-semibold border border-red-200">⏰ {t.timesUp}</div>
           ) : (
-            <button onClick={submitAnswer} disabled={submitting || (currentQ.question_type !== 'open' && selectedAnswer === null) || (currentQ.question_type === 'open' && !textAnswer.trim())}
+            <button onClick={submitAnswer}
+              disabled={submitting || (currentQ.question_type !== 'open' && selectedAnswer === null) || (currentQ.question_type === 'open' && !textAnswer.trim())}
               className="btn-primary w-full py-3 text-base">
               {submitting ? t.sending : t.sendAnswer}
             </button>
@@ -267,6 +295,5 @@ export default function JoinPage() {
       </div>
     )
   }
-
   return null
 }
