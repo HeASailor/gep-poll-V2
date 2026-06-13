@@ -10,7 +10,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id">
-      <body className="bg-gray-50 min-h-screen"><LangProvider>{children}</LangProvider></body>
+      <body className="bg-gray-50 min-h-screen"><LangProvider>      <header className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between">
+        <img src="https://www.gep.com/themes/custom/geptheme/gep-desktop-logo.svg" alt="GEP" className="h-8" />
+        <img src="https://www.pertamina.com/file/files/2025/02/pertamina-logo.svg" alt="Pertamina" className="h-8" />
+      </header>{children}</LangProvider></body>
     </html>
   )
 }
