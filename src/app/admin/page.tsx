@@ -102,6 +102,23 @@ export default function AdminPage() {
     if (!error && data) { setSessions([...sessions, data]); setNewTitle(''); setNewDesc(''); setCreating(false) }
   }
 
+  async function masterReset() {
+    const msg = lang === "id" 
+      ? "RESET SEMUA SESI? Semua data peserta dan respons akan dihapus. Tindakan ini tidak dapat dibatalkan!" 
+      : "RESET ALL SESSIONS? All participant data and responses will be deleted. This cannot be undone!"
+    if (!window.confirm(msg)) return
+    if (!window.confirm(lang === "id" ? "Yakin? Semua data latihan akan hilang!" : "Are you sure? All training data will be lost!")) return
+    let count = 0
+    for (const s of sessions) {
+      await supabase.from("responses").delete().eq("session_id", s.id)
+      await supabase.from("participants").delete().eq("session_id", s.id)
+      await supabase.from("sessions").update({ status: "draft", current_question_index: 0, started_at: null, ended_at: null }).eq("id", s.id)
+      count++
+    }
+    fetchSessions()
+    alert(lang === "id" ? count + " sesi berhasil direset!" : count + " sessions reset successfully!")
+  }
+
   async function resetSession(id: string) {
     const msg = lang === "id" ? "Reset sesi ini? Semua respons dan peserta akan dihapus." : "Reset this session? All responses and participants will be deleted."
     if (!window.confirm(msg)) return
@@ -180,6 +197,9 @@ export default function AdminPage() {
 
       <div className="flex gap-3 items-center mb-6 flex-wrap">
         <button onClick={() => setCreating(!creating)} className="btn-primary">{t.newSession}</button>
+        <button onClick={masterReset} className="text-xs px-3 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors font-medium">
+          🔄 {lang === "id" ? "Reset Semua" : "Reset All"}
+        </button>
         <div className="flex gap-2 flex-wrap">
           {filterGroups.map(g => (
             <button key={g} onClick={() => setFilter(g)}
