@@ -57,7 +57,7 @@ export default function ReportsPage() {
     setAp(wb.length ? Math.round(wb.reduce((a: number, b: any) => a + (b.pre || 0), 0) / wb.length) : 0)
     setAo(wb.length ? Math.round(wb.reduce((a: number, b: any) => a + (b.post || 0), 0) / wb.length) : 0)
     setPc(m.filter((r: any) => r.pass).length)
-    setResults(m); setLoading(false); setDone(true)
+    setResults(m); setLoading(false); setDone(true); console.log("Results:", m.length, "participants")
   }
   function csv() {
     let s = 'Nama,Pre-Test,Post-Test,Improvement,Status\n'
