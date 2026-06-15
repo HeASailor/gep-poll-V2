@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import PptxGenJS from 'pptxgenjs'
+
 import { useLang, LangToggle } from '@/lib/lang'
 const PASS = 70
 export default function ReportsPage() {
@@ -64,6 +64,15 @@ export default function ReportsPage() {
   }
 
   async function exportPPT() {
+    // Load pptxgenjs from CDN
+    await new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js'
+      script.onload = () => resolve()
+      script.onerror = reject
+      document.head.appendChild(script)
+    })
+    const PptxGenJS = (window as any).PptxGenJS
     const prs = new PptxGenJS()
     prs.layout = 'LAYOUT_WIDE'
 
