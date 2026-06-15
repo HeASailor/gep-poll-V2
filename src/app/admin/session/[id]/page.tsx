@@ -133,6 +133,11 @@ export default function SessionPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="max-w-5xl mx-auto p-4 py-6">
+      <div className="flex h-1 w-full mb-4 rounded-full overflow-hidden">
+        <div className="flex-1" style={{backgroundColor:'#ED1C24'}} />
+        <div className="flex-1" style={{backgroundColor:'#0066B3'}} />
+        <div className="flex-1" style={{backgroundColor:'#00A651'}} />
+      </div>
       <div className="flex items-center gap-3 mb-6 flex-wrap">
         <Link href="/admin" className="text-blue-600 hover:underline text-sm">← Dashboard</Link>
         <div className="flex-1">
