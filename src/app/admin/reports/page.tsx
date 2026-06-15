@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useLang, LangToggle } from '@/lib/lang'
 const PASS = 70
 export default function ReportsPage() {
   const [sessions, setSessions] = useState<any[]>([])
@@ -12,13 +13,14 @@ export default function ReportsPage() {
   const [ap, setAp] = useState(0)
   const [ao, setAo] = useState(0)
   const [pc, setPc] = useState(0)
+  const { lang } = useLang()
   useEffect(() => {
     supabase.auth.getUser().then(({data}: any) => {
       if (data.user) supabase.from('sessions').select('*').order('title').then(({data: d}: any) => { if (d) setSessions(d) })
     })
   }, [])
-  const preS = sessions.filter((s: any) => s.title.includes('Pre-Test'))
-  const postS = sessions.filter((s: any) => s.title.includes('Post-Test'))
+  const preS = sessions.filter((s: any) => s.title.includes(lang === "id" ? "Pre-Test" : "Pre-Test"))
+  const postS = sessions.filter((s: any) => s.title.includes(lang === "id" ? "Post-Test" : "Post-Test"))
   async function gen() {
     if (!pre || !post) return
     setLoading(true)
@@ -68,8 +70,9 @@ export default function ReportsPage() {
   return (
     <div className="max-w-5xl mx-auto p-4 py-8">
       <div className="flex items-center gap-3 mb-6">
-        <a href="/admin" className="text-blue-600 hover:underline text-sm">← Dashboard</a>
-        <h1 className="text-2xl font-bold text-gray-800">📊 Laporan Hasil Training</h1>
+        <a href="/admin" className="text-blue-600 hover:underline text-sm">← {lang === "id" ? "Dashboard" : "Dashboard"}</a>
+        <h1 className="text-2xl font-bold text-gray-800">📊 {lang === "id" ? "Laporan Hasil Training" : "Training Reports"}</h1>
+        <LangToggle />
       </div>
       <div className="card mb-6">
         <h2 className="font-semibold text-gray-700 mb-4">Pilih Sesi</h2>
@@ -88,13 +91,13 @@ export default function ReportsPage() {
           </div>
         </div>
         <button onClick={gen} disabled={!pre || !post || loading} className="btn-primary">
-          {loading ? 'Memproses...' : '📊 Generate Laporan'}
+          {loading ? lang === "id" ? "Memproses..." : "Processing..." : lang === "id" ? "📊 Generate Laporan" : "📊 Generate Report"}
         </button>
       </div>
       {done && results.length > 0 && (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            {[{v: String(results.length), l: 'Total Peserta', c: 'text-blue-700'}, {v: ap + '%', l: 'Avg Pre-Test', c: 'text-amber-600'}, {v: ao + '%', l: 'Avg Post-Test', c: 'text-green-600'}, {v: pr + '%', l: 'Pass Rate', c: pr >= 70 ? 'text-green-600' : 'text-red-600'}].map((x: any) => (
+            {[{v: String(results.length), l: lang === "id" ? "Total Peserta" : "Total Participants", c: 'text-blue-700'}, {v: ap + '%', l: lang === "id" ? "Avg Pre-Test" : "Avg Pre-Test", c: 'text-amber-600'}, {v: ao + '%', l: lang === "id" ? "Avg Post-Test" : "Avg Post-Test", c: 'text-green-600'}, {v: pr + '%', l: lang === "id" ? "Pass Rate" : "Pass Rate", c: pr >= 70 ? 'text-green-600' : 'text-red-600'}].map((x: any) => (
               <div key={x.l} className="card text-center py-4">
                 <div className={`text-3xl font-bold ${x.c}`}>{x.v}</div>
                 <div className="text-xs text-gray-500 mt-1">{x.l}</div>
@@ -121,7 +124,7 @@ export default function ReportsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead><tr className="border-b border-gray-200">
-                  {['Nama', 'Pre-Test', 'Post-Test', 'Improvement', 'Status'].map((h: string) => <th key={h} className="text-left py-2 px-3 text-gray-600 font-medium">{h}</th>)}
+                  {['Nama', lang === "id" ? "Pre-Test" : "Pre-Test", lang === "id" ? "Post-Test" : "Post-Test", 'Improvement', 'Status'].map((h: string) => <th key={h} className="text-left py-2 px-3 text-gray-600 font-medium">{h}</th>)}
                 </tr></thead>
                 <tbody>
                   {results.map((r: any, i: number) => (
