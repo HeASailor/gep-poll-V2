@@ -22,14 +22,13 @@ export default function ReportsPage() {
   async function gen() {
     if (!pre || !post) return
     setLoading(true)
-    const [a,b,c,d,e,f] = await Promise.all([
-      supabase.from('questions').select('id,correct_option_index').eq('session_id', pre),
-      supabase.from('questions').select('id,correct_option_index').eq('session_id', post),
-      supabase.from('participants').select('id,display_name').eq('session_id', pre),
-      supabase.from('responses').select('*').eq('session_id', pre),
-      supabase.from('participants').select('id,display_name').eq('session_id', post),
-      supabase.from('responses').select('*').eq('session_id', post),
-    ])
+    const a = await supabase.from('questions').select('id,correct_option_index').eq('session_id', pre)
+    const b = await supabase.from('questions').select('id,correct_option_index').eq('session_id', post)
+    const c = await supabase.from('participants').select('id,display_name').eq('session_id', pre)
+    const d = await supabase.from('responses').select('*').eq('session_id', pre)
+    const e = await supabase.from('participants').select('id,display_name').eq('session_id', post)
+    const f = await supabase.from('responses').select('*').eq('session_id', post)
+    console.log('Data loaded - preQ:', a.data?.length, 'postQ:', b.data?.length, 'preP:', c.data?.length, 'preR:', d.data?.length, 'postP:', e.data?.length, 'postR:', f.data?.length)
     function sc(ps: any[], rs: any[], qs: any[]) {
       const scores: Record<string, any> = {}
       ps.forEach((p: any) => {
