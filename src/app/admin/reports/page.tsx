@@ -64,113 +64,62 @@ export default function ReportsPage() {
   }
 
   async function exportPPT() {
-    // Load pptxgenjs from CDN
-    await new Promise<void>((resolve, reject) => {
+    try {
       const script = document.createElement('script')
       script.src = 'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js'
-      script.onload = () => resolve()
-      script.onerror = reject
       document.head.appendChild(script)
-    })
-    const PptxGenJS = (window as any).PptxGenJS
-    const prs = new PptxGenJS()
-    prs.layout = 'LAYOUT_WIDE'
+      await new Promise(resolve => script.onload = resolve)
+      const PptxGenJS = (window as any).PptxGenJS
+      const prs = new PptxGenJS()
+      prs.layout = 'LAYOUT_WIDE'
+      const NAVY = '0a1628', RED = 'ED1C24', WHITE = 'FFFFFF', GREEN = '00A651'
+      const preTitle = sessions.find((s:any) => s.id === pre)?.title || 'Pre-Test'
+      const postTitle = sessions.find((s:any) => s.id === post)?.title || 'Post-Test'
+      
+      // Slide 1 - Cover
+      const s1 = prs.addSlide()
+      s1.background = { color: NAVY }
+      s1.addText('GEP TrainIQ', { x:1, y:1.5, w:11, h:0.6, fontSize:14, color:'AAAAAA', fontFace:'Calibri' })
+      s1.addText('Training Assessment Report', { x:1, y:2.2, w:11, h:1, fontSize:36, color:WHITE, fontFace:'Calibri', bold:true })
+      s1.addText(preTitle.replace(' Pre-Test |',''), { x:1, y:3.3, w:11, h:0.5, fontSize:18, color:'CCCCCC', fontFace:'Calibri' })
+      s1.addText('Pertamina Phase 5 — GEP SMART', { x:1, y:4.5, w:11, h:0.4, fontSize:12, color:'888888', fontFace:'Calibri' })
 
-    const NAVY = '0a1628'
-    const RED = 'ED1C24'
-    const BLUE = '0066B3'
-    const GREEN = '00A651'
-    const WHITE = 'FFFFFF'
-    const GRAY = 'F5F5F5'
+      // Slide 2 - Summary
+      const s2 = prs.addSlide()
+      s2.addText('Results Summary', { x:0.5, y:0.3, w:12, h:0.7, fontSize:28, color:NAVY, fontFace:'Calibri', bold:true })
+      s2.addText('Total: ' + results.length + ' participants  |  Pre-Test Avg: ' + ap + '%  |  Post-Test Avg: ' + ao + '%  |  Pass Rate: ' + pr + '%', { x:0.5, y:1.2, w:12, h:0.5, fontSize:14, color:'444444', fontFace:'Calibri' })
+      s2.addText((ao-ap >= 0 ? '+' : '') + (ao-ap) + '% improvement', { x:0.5, y:2.0, w:12, h:0.8, fontSize:32, color: ao-ap >= 0 ? GREEN : RED, fontFace:'Calibri', bold:true })
 
-    const preTitle = sessions.find((s: any) => s.id === pre)?.title || 'Pre-Test'
-    const postTitle = sessions.find((s: any) => s.id === post)?.title || 'Post-Test'
-
-    // Slide 1 — Cover
-    const cover = prs.addSlide()
-    cover.background = { color: NAVY }
-    cover.addShape(prs.ShapeType.rect, { x: 0, y: 0, w: 0.3, h: 5.63, fill: { color: RED } })
-    cover.addShape(prs.ShapeType.rect, { x: 0.3, y: 0, w: 0.3, h: 5.63, fill: { color: BLUE } })
-    cover.addShape(prs.ShapeType.rect, { x: 0.6, y: 0, w: 0.3, h: 5.63, fill: { color: GREEN } })
-    cover.addText('GEP TrainIQ', { x: 1.2, y: 1.2, w: 8, h: 0.6, fontSize: 14, color: 'AAAAAA', fontFace: 'Calibri', bold: false })
-    cover.addText('Training Assessment Report', { x: 1.2, y: 1.9, w: 8, h: 1, fontSize: 36, color: WHITE, fontFace: 'Calibri', bold: true })
-    cover.addText(preTitle.replace(' Pre-Test |', ''), { x: 1.2, y: 3.0, w: 8, h: 0.5, fontSize: 18, color: 'CCCCCC', fontFace: 'Calibri' })
-    cover.addText('Pre-Test vs Post-Test Comparison', { x: 1.2, y: 3.6, w: 8, h: 0.4, fontSize: 14, color: '888888', fontFace: 'Calibri' })
-    cover.addText('Pertamina Phase 5 — GEP SMART Implementation', { x: 1.2, y: 4.8, w: 8, h: 0.4, fontSize: 11, color: '666666', fontFace: 'Calibri' })
-
-    // Slide 2 — Summary Stats
-    const summary = prs.addSlide()
-    summary.background = { color: GRAY }
-    summary.addText('Training Results Summary', { x: 0.5, y: 0.3, w: 12, h: 0.7, fontSize: 28, color: NAVY, fontFace: 'Calibri', bold: true })
-    summary.addText(preTitle + '  vs  ' + postTitle, { x: 0.5, y: 1.0, w: 12, h: 0.4, fontSize: 13, color: '666666', fontFace: 'Calibri' })
-
-    // Stat cards
-    const stats = [
-      { label: 'Total Participants', value: String(results.length), color: NAVY },
-      { label: 'Avg Pre-Test', value: ap + '%', color: 'E8A200' },
-      { label: 'Avg Post-Test', value: ao + '%', color: GREEN },
-      { label: 'Pass Rate', value: pr + '%', color: pr >= 70 ? GREEN : RED },
-    ]
-    stats.forEach((stat, i) => {
-      const x = 0.5 + i * 3.1
-      summary.addShape(prs.ShapeType.rect, { x, y: 1.6, w: 2.8, h: 1.6, fill: { color: WHITE }, line: { color: 'DDDDDD', width: 1 } })
-      summary.addText(stat.value, { x, y: 1.8, w: 2.8, h: 0.8, fontSize: 32, color: stat.color, fontFace: 'Calibri', bold: true, align: 'center' })
-      summary.addText(stat.label, { x, y: 2.7, w: 2.8, h: 0.4, fontSize: 11, color: '666666', fontFace: 'Calibri', align: 'center' })
-    })
-
-    // Improvement callout
-    const imp = ao - ap
-    summary.addShape(prs.ShapeType.rect, { x: 0.5, y: 3.5, w: 12, h: 1.2, fill: { color: imp >= 0 ? '00A651' : RED }, line: { color: 'transparent' } })
-    summary.addText(
-      (imp >= 0 ? '▲ ' : '▼ ') + Math.abs(imp) + '% Average Improvement from Pre-Test to Post-Test',
-      { x: 0.5, y: 3.7, w: 12, h: 0.7, fontSize: 20, color: WHITE, fontFace: 'Calibri', bold: true, align: 'center' }
-    )
-    summary.addText('Passing Score: 70%  |  ' + results.filter((r: any) => r.pass).length + ' of ' + results.length + ' participants passed',
-      { x: 0.5, y: 4.9, w: 12, h: 0.4, fontSize: 12, color: '666666', fontFace: 'Calibri', align: 'center' }
-    )
-
-    // Slide 3 — Individual Scores Table
-    const table = prs.addSlide()
-    table.background = { color: WHITE }
-    table.addText('Individual Participant Results', { x: 0.5, y: 0.3, w: 12, h: 0.6, fontSize: 24, color: NAVY, fontFace: 'Calibri', bold: true })
-
-    const tableRows: any[] = [
-      [
-        { text: 'Name', options: { bold: true, color: WHITE, fill: { color: NAVY }, align: 'left' } },
-        { text: 'Pre-Test', options: { bold: true, color: WHITE, fill: { color: NAVY }, align: 'center' } },
-        { text: 'Post-Test', options: { bold: true, color: WHITE, fill: { color: NAVY }, align: 'center' } },
-        { text: 'Improvement', options: { bold: true, color: WHITE, fill: { color: NAVY }, align: 'center' } },
-        { text: 'Status', options: { bold: true, color: WHITE, fill: { color: NAVY }, align: 'center' } },
-      ]
-    ]
-
-    results.slice(0, 20).forEach((r: any) => {
-      const impVal = r.imp !== null ? (r.imp >= 0 ? '+' : '') + r.imp + '%' : 'N/A'
-      tableRows.push([
-        { text: r.name, options: { align: 'left', color: '333333' } },
-        { text: r.pre !== null ? r.pre + '%' : '—', options: { align: 'center', color: (r.pre || 0) >= 70 ? GREEN : 'E8A200' } },
-        { text: r.post !== null ? r.post + '%' : '—', options: { align: 'center', color: (r.post || 0) >= 70 ? GREEN : RED } },
-        { text: impVal, options: { align: 'center', color: r.imp !== null && r.imp >= 0 ? GREEN : RED } },
-        { text: r.pass ? 'PASS ✓' : 'FAIL ✗', options: { align: 'center', bold: true, color: r.pass ? GREEN : RED } },
-      ])
-    })
-
-    table.addTable(tableRows, {
-      x: 0.5, y: 1.1, w: 12.5, h: 4.0,
-      fontSize: 11, fontFace: 'Calibri',
-      border: { type: 'solid', color: 'DDDDDD', pt: 0.5 },
-      rowH: 0.28,
-    })
-
-    if (results.length > 20) {
-      table.addText('* Showing first 20 participants. Download CSV for complete list.', { x: 0.5, y: 5.2, w: 12, h: 0.3, fontSize: 10, color: '999999', fontFace: 'Calibri', italic: true })
+      // Slide 3 - Table
+      const s3 = prs.addSlide()
+      s3.addText('Individual Results', { x:0.5, y:0.3, w:12, h:0.6, fontSize:24, color:NAVY, fontFace:'Calibri', bold:true })
+      const rows:any[] = [[
+        {text:'Name',options:{bold:true,color:WHITE,fill:{color:NAVY}}},
+        {text:'Pre-Test',options:{bold:true,color:WHITE,fill:{color:NAVY},align:'center'}},
+        {text:'Post-Test',options:{bold:true,color:WHITE,fill:{color:NAVY},align:'center'}},
+        {text:'Improvement',options:{bold:true,color:WHITE,fill:{color:NAVY},align:'center'}},
+        {text:'Status',options:{bold:true,color:WHITE,fill:{color:NAVY},align:'center'}},
+      ]]
+      results.forEach((r:any) => {
+        rows.push([
+          {text:r.name,options:{color:'333333'}},
+          {text:r.pre!=null?r.pre+'%':'—',options:{align:'center',color:(r.pre||0)>=70?GREEN:'E8A200'}},
+          {text:r.post!=null?r.post+'%':'—',options:{align:'center',color:(r.post||0)>=70?GREEN:RED}},
+          {text:r.imp!=null?(r.imp>=0?'+':'')+r.imp+'%':'—',options:{align:'center',color:r.imp!=null&&r.imp>=0?GREEN:RED}},
+          {text:r.pass?'PASS':'FAIL',options:{align:'center',bold:true,color:r.pass?GREEN:RED}},
+        ])
+      })
+      s3.addTable(rows, { x:0.5, y:1.1, w:12.5, fontSize:11, fontFace:'Calibri', border:{type:'solid',color:'DDDDDD',pt:0.5}, rowH:0.3 })
+      
+      await prs.writeFile({ fileName: 'GEP_TrainIQ_Report.pptx' })
+      alert('PowerPoint downloaded!')
+    } catch(e) {
+      console.error('PPT error:', e)
+      alert('PPT generation failed: ' + e)
     }
-
-    // Save
-    prs.writeFile({ fileName: 'GEP_TrainIQ_Report.pptx' })
   }
 
-  function csv() {
+    function csv() {
     let s = 'Nama,Pre-Test,Post-Test,Improvement,Status\n'
     results.forEach((r: any) => { s += `"${r.name}",${r.pre ?? 'N/A'},${r.post ?? 'N/A'},${r.imp != null ? (r.imp >= 0 ? '+' : '') + r.imp + '%' : 'N/A'},${r.pass ? 'PASS' : 'FAIL'}\n` })
     s += `\nTotal,${results.length}\nAvg Pre,${ap}%\nAvg Post,${ao}%\nImprovement,+${ao - ap}%\nPass Rate,${Math.round(pc / results.length * 100)}%\n`
