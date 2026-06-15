@@ -10,9 +10,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id">
-      <body className="bg-gray-50 min-h-screen"><LangProvider>      <header className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between">
-        <img src="/gep-logo.svg" alt="GEP" className="h-8" />
-        <img src="/pertamina-logo.svg" alt="Pertamina" className="h-8" />
+      <body className="bg-gray-50 min-h-screen"><LangProvider>      <header style={{backgroundColor:'#0a1628'}} className="px-4 py-3 flex items-center justify-between border-b border-white border-opacity-10">
+        <div className="flex items-center gap-2 bg-white bg-opacity-10 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white border-opacity-20">
+          <span className="font-bold text-white text-xs tracking-wider">GEP</span>
+          <div className="w-px h-3 bg-white opacity-30" />
+          <span className="font-bold text-white text-xs tracking-wider">PERTAMINA</span>
+          <div className="w-1.5 h-1.5 rounded-full" style={{backgroundColor:'#ED1C24'}} />
+        </div>
+        <span className="text-white text-opacity-40 text-xs hidden sm:block">GEP SMART Phase 5</span>
       </header>{children}</LangProvider></body>
     </html>
   )
