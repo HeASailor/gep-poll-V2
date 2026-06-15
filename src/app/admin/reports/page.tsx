@@ -38,7 +38,7 @@ export default function ReportsPage() {
           const resp = pr.find((r: any) => r.question_id === q.id)
           if (resp && resp.answer_index === q.correct_option_index) correct++
         })
-        scores[p.display_name.trim().toLowerCase()] = { score: Math.round((correct / (qs.length || 10)) * 100), name: p.display_name }
+        const dname = (p.display_name || "Unknown").trim(); scores[dname.toLowerCase()] = { score: Math.round((correct / (qs.length || 10)) * 100), name: dname }
       })
       return scores
     }
