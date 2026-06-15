@@ -219,6 +219,7 @@ export default function ReportsPage() {
           </div>
           <div className="flex gap-3 mb-6">
             <button onClick={csv} className="btn-primary">⬇ Export CSV (Excel)</button>
+            <button onClick={exportPPT} className="btn-secondary">📊 Export PowerPoint</button>
           </div>
           <div className="card">
             <h3 className="font-semibold text-gray-700 mb-4">Hasil Individual ({results.length} peserta)</h3>
