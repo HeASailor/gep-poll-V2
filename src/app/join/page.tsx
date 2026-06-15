@@ -7,7 +7,7 @@ type Screen = 'join' | 'waiting' | 'question' | 'submitted' | 'ended'
 
 const T = {
   id: {
-    title: 'GEP Poll', subtitle: 'Pertamina Phase 5 Training',
+    title: 'GEP TrainIQ', subtitle: 'Pertamina Phase 5 Training',
     nameLabel: 'Nama Lengkap Anda', namePlaceholder: 'Tulis nama Anda',
     codeLabel: 'Kode Ruangan', joinBtn: 'Bergabung',
     errorEmpty: 'Masukkan kode dan nama Anda.',
@@ -28,7 +28,7 @@ const T = {
     sessionLabel: 'Sesi',
   },
   en: {
-    title: 'GEP Poll', subtitle: 'Pertamina Phase 5 Training',
+    title: 'GEP TrainIQ', subtitle: 'Pertamina Phase 5 Training',
     nameLabel: 'Your Full Name', namePlaceholder: 'Enter your name',
     codeLabel: 'Room Code', joinBtn: 'Join',
     errorEmpty: 'Please enter your name and room code.',

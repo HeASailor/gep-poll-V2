@@ -3,8 +3,8 @@ import './globals.css'
 import { LangProvider } from '@/lib/lang'
 
 export const metadata: Metadata = {
-  title: 'GEP Poll — Pertamina Training',
-  description: 'Live polling untuk sesi pelatihan Pertamina Phase 5',
+  title: 'GEP TrainIQ — Training Assessment Platform',
+  description: 'GEP TrainIQ — Real-time training assessment platform for GEP implementations',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

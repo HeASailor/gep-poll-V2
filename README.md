@@ -1,88 +1,124 @@
-# GEP Poll — Pertamina Phase 5 Live Polling App
+# GEP TrainIQ — Training Assessment Platform
 
-Real-time live polling platform for Pertamina training sessions.
-Supports 1000+ concurrent participants, Bahasa Indonesia UI.
+> Built by Himanshu Chaudhary, GEP Worldwide | Originally deployed for Pertamina Phase 5
 
-## Features
-- Trainer login (multi-admin, each trainer has their own account)
-- Create sessions with MCQ, Rating (1–5), and Open Text questions
-- Pre-loaded with Pertamina Phase 5 modules
-- 4-digit room code for participants to join (no login needed)
-- Live real-time results as votes come in
-- Timer per question
-- CSV export of results
-- Mobile-friendly participant view
+GEP TrainIQ is a **real-time training assessment platform** built to replace third-party tools like Mentimeter and Kahoot for GEP client training engagements. It provides live pre-test and post-test quizzes, real-time results, and automated scoring — all under GEP's control.
 
 ---
 
-## Setup (5 steps)
+## Why GEP TrainIQ?
 
-### 1. Supabase Database
-1. Go to https://supabase.com → New Project
-2. SQL Editor → New Query → paste entire contents of `gep_poll_supabase_schema.sql` → Run
-3. Go to Settings → API → copy:
-   - `Project URL`
-   - `anon public` key
+| Feature | Mentimeter | Kahoot | GEP TrainIQ |
+|---|---|---|---|
+| Pre/Post test scoring | ❌ | ❌ | ✅ |
+| Answer key + PASS/FAIL | ❌ | ❌ | ✅ |
+| 1000+ concurrent users | Paid | Paid | ✅ Free |
+| GEP data ownership | ❌ | ❌ | ✅ |
+| Bilingual (EN/Bahasa) | ❌ | ❌ | ✅ |
+| Custom branding | Paid | Paid | ✅ |
+| Cost per engagement | ~$30/mo | ~$30/mo | $0 |
 
-### 2. Configure environment
+---
+
+## Features
+
+- **Multi-admin** — Multiple GEP trainers can manage sessions independently
+- **Live polling** — Real-time results as participants answer
+- **Pre/Post test** — Separate sessions with score comparison
+- **Auto-scoring** — PASS/FAIL based on configurable passing score (default 70%)
+- **Timer sync** — Admin controls timer, participants see countdown live
+- **Auto-submit** — Answers auto-submitted when timer expires
+- **Bilingual** — Full English/Bahasa Indonesia toggle on all pages
+- **CSV export** — Download results for Excel reporting
+- **Mobile-first** — Works on any phone browser, no app download needed
+- **Invite code** — Only GEP team members can register as trainers
+- **Reset button** — One-click clear all test data between sessions
+- **Question types** — MCQ, Rating (1-5), Open Text
+
+---
+
+## Current Deployment
+
+**Live URL:** https://gep-poll.vercel.app
+
+**First client:** Pertamina Phase 5 (GEP SMART S2P Implementation)
+- 31 pre-loaded sessions (KU × 5 days, EU × 5 days, VD × 4 days)
+- 310 questions with answer keys
+- 3 feedback surveys
+- Training dates: July 2026
+
+---
+
+## Tech Stack
+
+- **Frontend:** Next.js 14 (App Router) + Tailwind CSS
+- **Database:** Supabase (PostgreSQL + Realtime)
+- **Auth:** Supabase Auth (email/password)
+- **Hosting:** Vercel (free tier)
+- **Language:** TypeScript
+
+---
+
+## Setup for New Client Engagement
+
+### 1. Clone and configure
 ```bash
+git clone https://github.com/HeASailor/gep-poll-V2.git
+cd gep-poll-V2
 cp .env.local.example .env.local
+# Add Supabase credentials
 ```
-Edit `.env.local` and fill in your Supabase URL and anon key.
 
-### 3. Install & run locally
-```bash
-npm install
-npm run dev
-```
-Open http://localhost:3000
+### 2. Database setup
+Run `gep_poll_supabase_schema.sql` in Supabase SQL Editor.
 
-### 4. Deploy to Vercel
+### 3. Load client questions
+Use the browser console script pattern (see `/docs/load_questions.js`) to bulk-load questions from Excel answer key.
+
+### 4. Deploy
 ```bash
 npx vercel
 ```
-When prompted, add your two environment variables:
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-### 5. Share with participants
-- Trainer: `your-app.vercel.app/admin`
-- Participants: `your-app.vercel.app/join`
+Or connect GitHub repo to Vercel for auto-deploy on every push.
 
 ---
 
-## How to use
+## Pages
 
-### As a Trainer
-1. Go to `/admin` → Sign up → Login
-2. Click **Buat Sesi Baru** → give it a name (e.g. "Pre-Test Day 1")
-3. Add questions (MCQ/Rating/Open) with module tag and timer
-4. Click **Mulai Sesi Live** → share the 4-digit room code
-5. Navigate between questions in the **Tampilkan Live** tab
-6. See results in real time → export CSV when done
-
-### As a Participant
-1. Go to `/join` on phone/laptop
-2. Enter your name and the 4-digit room code
-3. Answer each question as it appears
-4. Wait for trainer to move to next question
+| Page | URL | Access |
+|---|---|---|
+| Home | `/` | Public |
+| Participant Join | `/join` | Public (room code required) |
+| Trainer Dashboard | `/admin` | GEP trainers (invite code) |
+| Session Manager | `/admin/session/[id]` | GEP trainers |
+| Reports & Scoring | `/admin/reports` | GEP trainers |
 
 ---
 
-## Modules covered (from Pertamina Phase 5 rundown)
-- Project Request & Project
-- RFx & Bidder List
-- Kontrak (Contracts)
-- E-Catalog & Procurement Dashboard
-- E-Auction
+## Roadmap (for Engineering)
 
-## Tech stack
-- Next.js 14 (App Router)
-- Supabase (Auth + Realtime PostgreSQL)
-- Tailwind CSS
-- Recharts
+- [ ] Multi-tenant architecture (one platform, multiple clients)
+- [ ] White-label branding per client (logo, colors via config)
+- [ ] Custom domain per client (`client-quiz.gep.com`)
+- [ ] SSO / SAML login for enterprise clients
+- [ ] PowerPoint export for training reports
+- [ ] QR code for room code
+- [ ] Leaderboard during session
+- [ ] Email results to trainer after session ends
+- [ ] Admin can see who hasn't answered in real time
+- [ ] Question bank — reuse questions across engagements
 
-## Scaling
-Supabase free tier handles up to 500 concurrent connections.
-For 1000+ vendors simultaneously, upgrade to Supabase Pro ($25/mo)
-which supports unlimited connections with connection pooling.
+---
+
+## Built By
+
+**Himanshu Chaudhary**
+Senior Business Consultant, GEP Worldwide
+Pertamina Phase 5 — Change Management Lead
+
+> *"Built during active client engagement to eliminate Mentimeter dependency and give GEP full control over training data and assessment quality."*
+
+---
+
+*GEP TrainIQ — Proprietary training assessment platform by GEP Worldwide*
