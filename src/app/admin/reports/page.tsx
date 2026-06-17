@@ -276,7 +276,7 @@ export default function ReportsPage() {
                 ))}
               </div>
               <div className="flex gap-3">
-                <button onClick={csv} className="btn-primary">⬇ Export CSV</button>
+                <button onClick={csv} className="btn-primary">⬇ Export Excel (4 Sheets)</button>
                 <button onClick={exportPPT} className="btn-secondary">📊 Export PowerPoint</button>
                 <button onClick={() => window.print()} className="btn-secondary">🖨️ Print</button>
               </div>
