@@ -65,6 +65,8 @@ export default function JoinPage() {
   const [submitting, setSubmitting] = useState(false)
   const [timeLeft, setTimeLeft] = useState<number | null>(null)
   const [finalScore, setFinalScore] = useState<{score: number, total: number} | null>(null)
+  const [myRank, setMyRank] = useState<{rank: number, total: number} | null>(null)
+  const [podium, setPodium] = useState<any[]>([])
   const { lang } = useLang()
   const t = T[lang as keyof typeof T]
 
@@ -240,7 +242,22 @@ export default function JoinPage() {
             <div className="text-sm font-normal mt-1 opacity-70">{Math.round(finalScore.score / finalScore.total * 100)}%</div>
           </div>
         )}
-        <button onClick={() => { setScreen('join'); setSession(null); setParticipantId(null); setAnsweredQIds(new Set([])); setFinalScore(null) }}
+        {myRank && (
+          <div className="mt-3 p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 font-semibold text-sm">
+            🏆 {lang === 'id' ? 'Peringkat Anda' : 'Your Rank'}: #{myRank.rank} {lang === 'id' ? 'dari' : 'of'} {myRank.total}
+          </div>
+        )}
+        {podium.length >= 2 && (
+          <div className="mt-4 w-full">
+            <div className="text-xs text-gray-400 mb-3 font-medium text-center">{lang === 'id' ? 'TOP PESERTA' : 'TOP PARTICIPANTS'}</div>
+            <div className="flex items-end justify-center gap-2">
+              {podium[1] && <div className="flex flex-col items-center"><div className="text-xl mb-1">🥈</div><div className="text-xs font-medium text-gray-700 w-16 text-center truncate">{podium[1].name}</div><div className="text-xs text-gray-500">{podium[1].score}/{podium[1].total}</div><div className="w-14 h-10 bg-gray-300 rounded-t-lg mt-1 flex items-center justify-center text-white font-bold text-sm">2</div></div>}
+              {podium[0] && <div className="flex flex-col items-center"><div className="text-2xl mb-1">🥇</div><div className="text-xs font-bold text-gray-800 w-16 text-center truncate">{podium[0].name}</div><div className="text-xs text-gray-600">{podium[0].score}/{podium[0].total}</div><div className="w-14 h-14 bg-yellow-400 rounded-t-lg mt-1 flex items-center justify-center text-white font-bold text-sm">1</div></div>}
+              {podium[2] && <div className="flex flex-col items-center"><div className="text-xl mb-1">🥉</div><div className="text-xs font-medium text-gray-700 w-16 text-center truncate">{podium[2].name}</div><div className="text-xs text-gray-500">{podium[2].score}/{podium[2].total}</div><div className="w-14 h-7 bg-orange-400 rounded-t-lg mt-1 flex items-center justify-center text-white font-bold text-sm">3</div></div>}
+            </div>
+          </div>
+        )}
+        <button onClick={() => { setScreen('join'); setSession(null); setParticipantId(null); setAnsweredQIds(new Set([])); setFinalScore(null); setMyRank(null); setPodium([]) }}
           className="btn-primary mt-4 w-full">{t.backHome}</button>
       </div>
     </div>
