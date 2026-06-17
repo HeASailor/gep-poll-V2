@@ -234,8 +234,9 @@ export default function SessionPage({ params }: { params: { id: string } }) {
         <div className="space-y-4">
           <div className="card text-center">
             <p className="text-gray-500 text-sm mb-1">Peserta bergabung di gep-poll.vercel.app/join</p>
-            <div className="text-5xl font-bold font-mono text-blue-700 tracking-widest my-3">{session.room_code}</div>
+            <div className="text-5xl font-bold font-mono text-blue-700 tracking-widest my-3">{session.room_code || "----"}</div>
             <p className="text-gray-400 text-sm">{participants.length} peserta</p>
+            <p className="text-xs text-gray-300 mt-1">Room Code: {session.room_code}</p>
           </div>
           {currentQ && (
             <div className="card">
