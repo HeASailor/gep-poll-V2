@@ -16,7 +16,7 @@ const T = {
     register: 'Daftar Akun Trainer', emailLabel: 'Email', passLabel: 'Password',
     nameLabel: 'Nama Lengkap', loginBtn: 'Masuk', registerBtn: 'Daftar',
     switchToRegister: 'Belum punya akun? Daftar', switchToLogin: 'Sudah punya akun? Login',
-    confirmEmail: 'Cek email untuk konfirmasi akun.',
+    confirmEmail: 'Akun berhasil dibuat! Silakan login.',
   },
   en: {
     dashboard: 'Trainer Dashboard', logout: 'Logout', newSession: '+ New Session',
@@ -27,7 +27,7 @@ const T = {
     register: 'Create Trainer Account', emailLabel: 'Email', passLabel: 'Password',
     nameLabel: 'Full Name', loginBtn: 'Sign In', registerBtn: 'Register',
     switchToRegister: 'No account? Register', switchToLogin: 'Have an account? Login',
-    confirmEmail: 'Check your email to confirm your account.',
+    confirmEmail: 'Account created! Please login now.',
   }
 }
 
