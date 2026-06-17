@@ -153,7 +153,7 @@ export default function SessionPage({ params }: { params: { id: string } }) {
           </div>
         </div>
         <LangToggle />
-        {session.status === 'active' && <button onClick={endSession} className="btn-danger text-sm">{lang === 'id' ? 'Akhiri Sesi' : 'End Session'}</button>}
+        {session.status === 'active' && <button onClick={endSession} className="btn-danger text-sm">{lang === 'en' ? 'End Session' : 'Akhiri Sesi'}</button>}
       </div>
 
       <div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-xl w-fit">
@@ -236,7 +236,7 @@ export default function SessionPage({ params }: { params: { id: string } }) {
             <p className="text-gray-500 text-sm mb-1">{lang === "en" ? "Participants join at" : "Peserta bergabung di"} gep-poll.vercel.app/join</p>
             <div className="text-5xl font-bold font-mono text-blue-700 tracking-widest my-3">{session.room_code || "----"}</div>
             <p className="text-gray-400 text-sm">{participants.length} {lang === "en" ? "participants" : "peserta"}</p>
-            <p className="text-xs text-gray-300 mt-1">Room Code: {session.room_code}</p>
+            
           </div>
           {currentQ && (
             <div className="card">
@@ -245,14 +245,14 @@ export default function SessionPage({ params }: { params: { id: string } }) {
                 <div className="flex items-center gap-2">
                   <span className={`text-2xl font-mono font-bold ${timer <= 10 ? 'text-red-600' : 'text-blue-700'}`}>{timer}s</span>
                   <button onClick={async () => { if (!timerRunning) { await supabase.from('sessions').update({ timer_started_at: new Date().toISOString(), timer_duration: currentQ?.timer_seconds || 30 }).eq('id', params.id) } else { await supabase.from('sessions').update({ timer_started_at: null }).eq('id', params.id) } setTimerRunning(!timerRunning) }} className="btn-secondary text-sm py-1 px-3">{timerRunning ? 'Pause' : 'Mulai'}</button>
-                  <button onClick={() => { setTimer(currentQ.timer_seconds); setTimerRunning(false) }} className="btn-secondary text-sm py-1 px-3">Reset</button>
+                  <button onClick={() => { setTimer(currentQ.timer_seconds); setTimerRunning(false) }} className="btn-secondary text-sm py-1 px-3">{lang === 'en' ? 'Reset' : 'Reset'}</button>
                 </div>
               </div>
               <h2 className="text-xl font-semibold text-gray-800 mb-4">{currentQ.question_text}</h2>
               <LiveResults responses={responses.filter((r: any) => r.question_id === currentQ.id)} question={currentQ} />
               <div className="flex gap-2 mt-4">
-                <button disabled={session.current_question_index === 0} onClick={() => setCurrentQ(session.current_question_index-1)} className="btn-secondary text-sm">{lang === 'id' ? 'Sebelumnya' : 'Previous'}</button>
-                <button disabled={session.current_question_index >= questions.length-1} onClick={() => setCurrentQ(session.current_question_index+1)} className="btn-primary text-sm">{lang === 'id' ? 'Selanjutnya' : 'Next'}</button>
+                <button disabled={session.current_question_index === 0} onClick={() => setCurrentQ(session.current_question_index-1)} className="btn-secondary text-sm">{lang === 'en' ? 'Previous' : 'Sebelumnya'}</button>
+                <button disabled={session.current_question_index >= questions.length-1} onClick={() => setCurrentQ(session.current_question_index+1)} className="btn-primary text-sm">{lang === 'en' ? 'Next' : 'Selanjutnya'}</button>
               </div>
             </div>
           )}
