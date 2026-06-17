@@ -106,11 +106,64 @@ export default function ReportsPage() {
     setResults(m); setLoading(false); setDone(true)
   }
 
-  function csv() {
-    let s = 'Nama,Pre-Test,Post-Test,Improvement,Status\n'
-    results.forEach((r: any) => { s += `"${r.name}",${r.pre ?? 'N/A'},${r.post ?? 'N/A'},${r.imp != null ? (r.imp >= 0 ? '+' : '') + r.imp + '%' : 'N/A'},${r.pass ? 'PASS' : 'FAIL'}\n` })
-    s += `\nTotal,${results.length}\nAvg Pre,${ap}%\nAvg Post,${ao}%\nImprovement,+${ao - ap}%\nPass Rate,${Math.round(pc / results.length * 100)}%\n`
-    const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(s); a.download = 'Hasil_Training.csv'; a.click()
+  async function csv() {
+    const script = document.createElement('script')
+    script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
+    document.head.appendChild(script)
+    await new Promise(resolve => { script.onload = resolve })
+    const XLSX = (window as any).XLSX
+    const wb = XLSX.utils.book_new()
+    // Sheet 1 - Summary
+    const ws1 = XLSX.utils.aoa_to_sheet([
+      ['GEP TrainIQ Training Report'],[''],
+      ['Metric','Value'],
+      ['Total Participants', results.length],
+      ['Avg Pre-Test', ap+'%'],['Avg Post-Test', ao+'%'],
+      ['Improvement', (ao-ap>=0?'+':'')+(ao-ap)+'%'],
+      ['Pass Rate', Math.round(pc/results.length*100)+'%'],
+      ['Failed', results.length-pc],
+    ])
+    XLSX.utils.book_append_sheet(wb, ws1, 'Summary')
+    // Sheet 2 - Individual
+    const ws2 = XLSX.utils.aoa_to_sheet([
+      ['Name','Pre-Test (%)','Post-Test (%)','Improvement','Status'],
+      ...results.map((r:any) => [r.name, r.pre??'N/A', r.post??'N/A', r.imp!=null?(r.imp>=0?'+':'')+r.imp+'%':'N/A', r.pass?'PASS':'FAIL'])
+    ])
+    XLSX.utils.book_append_sheet(wb, ws2, 'Individual Results')
+    // Sheet 3 - Question Analysis
+    const ws3 = XLSX.utils.aoa_to_sheet([
+      ['#','Question','Pre %','Post %','Improvement','Difficulty'],
+      ...questionAnalysis.map((q:any) => [q.index, q.question, q.prePct+'%', q.postPct+'%', (q.improvement>=0?'+':'')+q.improvement+'%', q.postPct>=70?'Easy':q.postPct>=40?'Medium':'Hard'])
+    ])
+    XLSX.utils.book_append_sheet(wb, ws3, 'Question Analysis')
+    // Sheet 4 - Participant Matrix
+    const matrixHeader = ['Name', ...preQuestions.map((_:any,i:number) => ['Q'+(i+1)+' Pre','Q'+(i+1)+' Post']).flat(), 'Pre Total','Post Total','Status']
+    const matrixRows = results.map((r:any) => {
+      const row:any[] = [r.name]
+      preQuestions.forEach((q:any,qi:number) => {
+        const postQ = postQuestions[qi]
+        const pa = r.preAnswers[q.id]
+        const oa = postQ ? r.postAnswers[postQ.id] : null
+        row.push(pa ? (pa.correct?'Correct':'Wrong') : 'N/A')
+        row.push(oa ? (oa.correct?'Correct':'Wrong') : 'N/A')
+      })
+      row.push(r.pre!=null?r.pre+'%':'N/A')
+      row.push(r.post!=null?r.post+'%':'N/A')
+      row.push(r.pass?'PASS':'FAIL')
+      return row
+    })
+    const ws4 = XLSX.utils.aoa_to_sheet([matrixHeader, ...matrixRows])
+    XLSX.utils.book_append_sheet(wb, ws4, 'Participant Detail')
+    // Sheet 5 - Insights
+    const ws5 = XLSX.utils.aoa_to_sheet([
+      ['INSIGHTS'],[''],
+      ['Hardest Questions'],['#','Question','Post %'],
+      ...[...questionAnalysis].sort((a,b)=>a.postPct-b.postPct).slice(0,3).map((q:any)=>[q.index,q.question,q.postPct+'%']),
+      [''],['Failed Participants'],['Name','Pre','Post'],
+      ...results.filter((r:any)=>!r.pass).map((r:any)=>[r.name,r.pre??'N/A',r.post??'N/A'])
+    ])
+    XLSX.utils.book_append_sheet(wb, ws5, 'Insights')
+    XLSX.writeFile(wb, 'GEP_TrainIQ_Report.xlsx')
   }
 
   async function exportPPT() {
