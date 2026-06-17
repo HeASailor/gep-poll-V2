@@ -244,7 +244,7 @@ export default function SessionPage({ params }: { params: { id: string } }) {
                 <span className="text-sm text-gray-500">{lang === "en" ? "Question" : "Pertanyaan"} {session.current_question_index+1} / {questions.length}</span>
                 <div className="flex items-center gap-2">
                   <span className={`text-2xl font-mono font-bold ${timer <= 10 ? 'text-red-600' : 'text-blue-700'}`}>{timer}s</span>
-                  <button onClick={async () => { if (!timerRunning) { await supabase.from('sessions').update({ timer_started_at: new Date().toISOString(), timer_duration: currentQ?.timer_seconds || 30 }).eq('id', params.id) } else { await supabase.from('sessions').update({ timer_started_at: null }).eq('id', params.id) } setTimerRunning(!timerRunning) }} className="btn-secondary text-sm py-1 px-3">{timerRunning ? 'Pause' : 'Mulai'}</button>
+                  <button onClick={async () => { if (!timerRunning) { await supabase.from('sessions').update({ timer_started_at: new Date().toISOString(), timer_duration: currentQ?.timer_seconds || 30 }).eq('id', params.id) } else { await supabase.from('sessions').update({ timer_started_at: null }).eq('id', params.id) } setTimerRunning(!timerRunning) }} className="btn-secondary text-sm py-1 px-3">{timerRunning ? (lang === 'en' ? 'Pause' : 'Pause') : (lang === 'en' ? 'Start' : 'Mulai')}</button>
                   <button onClick={() => { setTimer(currentQ.timer_seconds); setTimerRunning(false) }} className="btn-secondary text-sm py-1 px-3">{lang === 'en' ? 'Reset' : 'Reset'}</button>
                 </div>
               </div>
