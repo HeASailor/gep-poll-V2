@@ -206,6 +206,15 @@ export default function JoinPage() {
     </div>
   )
 
+  if (showCountdown && countdown !== null) return (
+    <div className="min-h-screen flex items-center justify-center" style={{backgroundColor:'#0a1628'}}>
+      <div className="text-center">
+        <div className="text-9xl font-bold text-white animate-ping" style={{animationDuration:'0.8s'}}>{countdown}</div>
+        <p className="text-white text-opacity-60 mt-4 text-lg">{lang === 'id' ? 'Bersiap...' : 'Get ready...'}</p>
+      </div>
+    </div>
+  )
+
   if (screen === 'waiting') return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="card w-full max-w-sm text-center">

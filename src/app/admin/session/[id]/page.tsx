@@ -245,6 +245,11 @@ export default function SessionPage({ params }: { params: { id: string } }) {
                 <div className="flex items-center gap-2">
                   <span className={`text-2xl font-mono font-bold ${timer <= 10 ? 'text-red-600' : 'text-blue-700'}`}>{timer}s</span>
                   <button onClick={async () => { if (!timerRunning) { await supabase.from('sessions').update({ timer_started_at: new Date().toISOString(), timer_duration: currentQ?.timer_seconds || 30 }).eq('id', params.id) } else { await supabase.from('sessions').update({ timer_started_at: null }).eq('id', params.id) } setTimerRunning(!timerRunning) }} className="btn-secondary text-sm py-1 px-3">{timerRunning ? (lang === 'en' ? 'Pause' : 'Pause') : (lang === 'en' ? 'Start' : 'Mulai')}</button>
+                  <button onClick={async () => {
+                    const newDuration = (currentQ?.timer_seconds || 30) + 10
+                    await supabase.from('sessions').update({ timer_started_at: new Date().toISOString(), timer_duration: newDuration }).eq('id', params.id)
+                    setTimer(prev => prev + 10)
+                  }} className="text-xs px-2 py-1.5 rounded-lg border border-blue-300 text-blue-600 hover:bg-blue-50">+10s</button>
                   <button onClick={() => { setTimer(currentQ.timer_seconds); setTimerRunning(false) }} className="btn-secondary text-sm py-1 px-3">{lang === 'en' ? 'Reset' : 'Reset'}</button>
                 </div>
               </div>
