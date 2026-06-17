@@ -152,6 +152,7 @@ export default function AdminPage() {
         </div>
         <form onSubmit={handleAuth} className="space-y-3">
           {isSignUp && (<div><label className="label">{t.nameLabel}</label><input className="input" value={name} onChange={e => setName(e.target.value)} required /></div>)}
+          {isSignUp && (<div><label className="label">{lang === 'id' ? 'Kode Undangan' : 'Invite Code'}</label><input className="input" value={inviteCode} onChange={e => setInviteCode(e.target.value)} placeholder="GEP2026" required /></div>)}
           <div><label className="label">{t.emailLabel}</label><input className="input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@gep.com" required /></div>
           <div><label className="label">{t.passLabel}</label><input className="input" type="password" value={password} onChange={e => setPassword(e.target.value)} required /></div>
           {authError && <p className="text-sm text-red-600">{authError}</p>}
