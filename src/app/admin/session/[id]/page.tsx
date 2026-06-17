@@ -28,6 +28,8 @@ export default function SessionPage({ params }: { params: { id: string } }) {
   const [qTimer, setQTimer] = useState(30)
   const [qModule, setQModule] = useState(MODULES[0])
   const [saving, setSaving] = useState(false)
+  const [leaderboard, setLeaderboard] = useState<any[]>([])
+  const [showLeaderboard, setShowLeaderboard] = useState(false)
   const { lang } = useLang()
 
   const fetchAll = useCallback(async () => {
