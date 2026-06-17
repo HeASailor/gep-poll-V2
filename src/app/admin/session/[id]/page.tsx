@@ -233,15 +233,15 @@ export default function SessionPage({ params }: { params: { id: string } }) {
       {tab === 'present' && (
         <div className="space-y-4">
           <div className="card text-center">
-            <p className="text-gray-500 text-sm mb-1">Peserta bergabung di gep-poll.vercel.app/join</p>
+            <p className="text-gray-500 text-sm mb-1">{lang === "en" ? "Participants join at" : "Peserta bergabung di"} gep-poll.vercel.app/join</p>
             <div className="text-5xl font-bold font-mono text-blue-700 tracking-widest my-3">{session.room_code || "----"}</div>
-            <p className="text-gray-400 text-sm">{participants.length} peserta</p>
+            <p className="text-gray-400 text-sm">{participants.length} {lang === "en" ? "participants" : "peserta"}</p>
             <p className="text-xs text-gray-300 mt-1">Room Code: {session.room_code}</p>
           </div>
           {currentQ && (
             <div className="card">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm text-gray-500">Pertanyaan {session.current_question_index+1} / {questions.length}</span>
+                <span className="text-sm text-gray-500">{lang === "en" ? "Question" : "Pertanyaan"} {session.current_question_index+1} / {questions.length}</span>
                 <div className="flex items-center gap-2">
                   <span className={`text-2xl font-mono font-bold ${timer <= 10 ? 'text-red-600' : 'text-blue-700'}`}>{timer}s</span>
                   <button onClick={async () => { if (!timerRunning) { await supabase.from('sessions').update({ timer_started_at: new Date().toISOString(), timer_duration: currentQ?.timer_seconds || 30 }).eq('id', params.id) } else { await supabase.from('sessions').update({ timer_started_at: null }).eq('id', params.id) } setTimerRunning(!timerRunning) }} className="btn-secondary text-sm py-1 px-3">{timerRunning ? 'Pause' : 'Mulai'}</button>
