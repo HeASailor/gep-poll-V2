@@ -33,8 +33,8 @@ export default function ReportsPage() {
   async function gen() {
     if (!pre || !post) return
     setLoading(true)
-    const a = await supabase.from('questions').select('id,correct_option_index,question_text,order_index').eq('session_id', pre).order('order_index')
-    const b = await supabase.from('questions').select('id,correct_option_index,question_text,order_index').eq('session_id', post).order('order_index')
+    const a = await supabase.from('questions').select('id,correct_option_index,question_text,order_index,options(option_text,option_index)').eq('session_id', pre).order('order_index')
+    const b = await supabase.from('questions').select('id,correct_option_index,question_text,order_index,options(option_text,option_index)').eq('session_id', post).order('order_index')
     const c = await supabase.from('participants').select('id,display_name').eq('session_id', pre)
     const d = await supabase.from('responses').select('*').eq('session_id', pre)
     const e = await supabase.from('participants').select('id,display_name').eq('session_id', post)
@@ -54,7 +54,7 @@ export default function ReportsPage() {
         qs.forEach((q: any) => {
           const r = pr.find((r: any) => r.question_id === q.id)
           const isCorrect = r ? Number(r.answer_index) === Number(q.correct_option_index) : null
-          qAnswers[q.id] = { answered: r?.answer_index ?? null, correct: isCorrect }
+          qAnswers[q.id] = { answered: r?.answer_index ?? null, answeredIdx: r?.answer_index ?? null, correct: isCorrect, correctIdx: q.correct_option_index, options: q.options }
           if (isCorrect) correct++
         })
         const dname = (p.display_name || 'Unknown').trim()
@@ -349,6 +349,7 @@ export default function ReportsPage() {
                     <th className="text-center py-2 px-3 text-gray-600 font-medium">Post %</th>
                     <th className="text-center py-2 px-3 text-gray-600 font-medium">{lang === 'id' ? 'Peningkatan' : 'Improvement'}</th>
                     <th className="text-center py-2 px-3 text-gray-600 font-medium">{lang === 'id' ? 'Kesulitan' : 'Difficulty'}</th>
+                    <th className="text-left py-2 px-3 text-gray-600 font-medium">{lang === 'id' ? 'Jawaban Benar' : 'Correct Answer'}</th>
                   </tr></thead>
                   <tbody>
                     {questionAnalysis.map((q: any, i: number) => (
@@ -362,6 +363,9 @@ export default function ReportsPage() {
                           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${q.postPct >= 70 ? 'bg-green-100 text-green-700' : q.postPct >= 40 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'}`}>
                             {q.postPct >= 70 ? (lang === 'id' ? 'Mudah' : 'Easy') : q.postPct >= 40 ? (lang === 'id' ? 'Sedang' : 'Medium') : (lang === 'id' ? 'Sulit' : 'Hard')}
                           </span>
+                        </td>
+                        <td className="py-2 px-3 text-left text-xs text-green-700 font-medium">
+                          {String.fromCharCode(65 + Number(q.correctIndex))}. {preQuestions[q.index-1]?.options?.find((o:any) => Number(o.option_index) === Number(q.correctIndex))?.option_text?.substring(0,30) || ''}
                         </td>
                       </tr>
                     ))}
@@ -406,13 +410,28 @@ export default function ReportsPage() {
                           const postQ = postQuestions[qi]
                           const preAns = r.preAnswers[q.id]
                           const postAns = postQ ? r.postAnswers[postQ.id] : null
+                          const getOption = (opts: any[], idx: number) => {
+                            if (idx === null || idx === undefined) return '—'
+                            const opt = opts?.find((o: any) => Number(o.option_index) === Number(idx))
+                            return opt ? String.fromCharCode(65 + Number(idx)) + '. ' + opt.option_text.substring(0, 20) : String.fromCharCode(65 + Number(idx))
+                          }
                           return (
                             <>
                               <td key={`pre-${qi}`} className="py-2 px-1 text-center border-l border-gray-100">
-                                {preAns ? (preAns.correct ? <span className="text-green-600">✅</span> : <span className="text-red-500">❌</span>) : <span className="text-gray-300">—</span>}
+                                {preAns ? (
+                                  <div className={`text-xs rounded px-1 py-0.5 ${preAns.correct ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                                    {preAns.correct ? '✅' : '❌'}
+                                    <div className="text-xs opacity-70 truncate max-w-16">{getOption(preAns.options, preAns.answeredIdx)}</div>
+                                  </div>
+                                ) : <span className="text-gray-300">—</span>}
                               </td>
                               <td key={`post-${qi}`} className="py-2 px-1 text-center">
-                                {postAns ? (postAns.correct ? <span className="text-green-600">✅</span> : <span className="text-red-500">❌</span>) : <span className="text-gray-300">—</span>}
+                                {postAns ? (
+                                  <div className={`text-xs rounded px-1 py-0.5 ${postAns.correct ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                                    {postAns.correct ? '✅' : '❌'}
+                                    <div className="text-xs opacity-70 truncate max-w-16">{getOption(postAns.options, postAns.answeredIdx)}</div>
+                                  </div>
+                                ) : <span className="text-gray-300">—</span>}
                               </td>
                             </>
                           )
