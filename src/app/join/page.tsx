@@ -97,43 +97,41 @@ export default function JoinPage() {
   }, [timeLeft, currentQ, answeredQIds, participantId, session, selectedAnswer, textAnswer])
 
   const calcFinalScore = useCallback(async (sessionId: string, pid: string, qs: any[]) => {
+    // Fetch questions fresh with correct answers
+    const { data: freshQs } = await supabase.from('questions').select('id,correct_option_index').eq('session_id', sessionId)
     const { data: myResponses } = await supabase.from('responses').select('*').eq('session_id', sessionId).eq('participant_id', pid)
-    if (myResponses) {
-      let correct = 0
-      qs.forEach((q: any) => {
-        const r = myResponses.find((r: any) => r.question_id === q.id)
-        if (r && r.answer_index === q.correct_option_index) correct++
-      })
-      setFinalScore({ score: correct, total: qs.length })
+    const { data: allParts } = await supabase.from('participants').select('id,display_name').eq('session_id', sessionId)
+    const { data: allResp } = await supabase.from('responses').select('*').eq('session_id', sessionId)
+    
+    const questions = freshQs || qs || []
+    const responses = myResponses || []
+    
+    let correct = 0
+    questions.forEach((q: any) => {
+      const r = responses.find((r: any) => r.question_id === q.id)
+      if (r && Number(r.answer_index) === Number(q.correct_option_index)) correct++
+    })
+    
+    console.log('Score calc:', correct, '/', questions.length, 'responses:', responses.length)
+    setFinalScore({ score: correct, total: questions.length })
+    
+    if (allParts && allResp) {
+      const scores = allParts.map((p: any) => {
+        const pR = allResp.filter((r: any) => r.participant_id === p.id)
+        let c = 0
+        questions.forEach((q: any) => {
+          const r = pR.find((r: any) => r.question_id === q.id)
+          if (r && Number(r.answer_index) === Number(q.correct_option_index)) c++
+        })
+        return { id: p.id, name: p.display_name, score: c, total: questions.length }
+      }).sort((a: any, b: any) => b.score - a.score)
+      const rank = scores.findIndex((s: any) => s.id === pid) + 1
+      setMyRank({ rank, total: allParts.length })
+      setPodium(scores.slice(0, 3))
     }
   }, [])
 
-  const syncSession = useCallback(async (s: any, pid?: string) => {
-    const { data: qs } = await supabase.from('questions').select('*, options(*)').eq('session_id', s.id).order('order_index')
-    if (qs) setQuestions(qs)
-    if (s.status === 'ended') {
-      const activePid = pid || participantId
-      if (qs && activePid) await calcFinalScore(s.id, activePid, qs)
-      setScreen('ended')
-      return
-    }
-    if (s.status === 'active' && qs) {
-      const q = qs[s.current_question_index]
-      setCurrentQ(q || null)
-      if (q) {
-        setScreen('question')
-        setSelectedAnswer(null)
-        setTextAnswer('')
-        if (s.timer_started_at) {
-          const elapsed = Math.floor((Date.now() - new Date(s.timer_started_at).getTime()) / 1000)
-          const remaining = (s.timer_duration || 30) - elapsed
-          setTimeLeft(remaining > 0 ? remaining : 0)
-        } else {
-          setTimeLeft(null)
-        }
-      }
-    }
-  }, [participantId, calcFinalScore])
+core])
 
   useEffect(() => {
     if (!session) return
