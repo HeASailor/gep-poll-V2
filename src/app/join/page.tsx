@@ -79,7 +79,7 @@ export default function JoinPage() {
       if (currentQ && !answeredQIds.has(currentQ.id) && participantId && session) {
         const autoSubmit = async () => {
           const payload: any = { question_id: currentQ.id, participant_id: participantId, session_id: session.id }
-          if (currentQ.question_type === 'mcq') payload.answer_index = selectedAnswer
+          if (currentQ.question_type === 'mcq') payload.answer_index = selectedAnswer !== null ? Number(selectedAnswer) : null !== null ? Number(selectedAnswer) : null
           else if (currentQ.question_type === 'rating') payload.rating_value = selectedAnswer
           else payload.answer_text = textAnswer || ''
           await supabase.from('responses').upsert(payload, { onConflict: 'question_id,participant_id' })
@@ -172,7 +172,7 @@ export default function JoinPage() {
     if (!currentQ || !participantId || !session) return
     setSubmitting(true)
     const payload: any = { question_id: currentQ.id, participant_id: participantId, session_id: session.id }
-    if (currentQ.question_type === 'mcq') payload.answer_index = selectedAnswer
+    if (currentQ.question_type === 'mcq') payload.answer_index = selectedAnswer !== null ? Number(selectedAnswer) : null
     else if (currentQ.question_type === 'rating') payload.rating_value = selectedAnswer
     else payload.answer_text = textAnswer
     await supabase.from('responses').upsert(payload, { onConflict: 'question_id,participant_id' })
