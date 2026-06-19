@@ -148,7 +148,7 @@ export default function SessionPage({ params }: { params: { id: string } }) {
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${session.status === 'active' ? 'bg-green-100 text-green-700' : session.status === 'ended' ? 'bg-gray-100 text-gray-500' : 'bg-yellow-100 text-yellow-700'}`}>
               {session.status === 'active' ? 'Aktif' : session.status === 'ended' ? 'Selesai' : 'Draft'}
             </span>
-            <span className="text-sm text-gray-500">Kode: <strong className="font-mono text-blue-700">{session.room_code}</strong></span>
+            <span className="text-sm text-gray-500">{lang === "en" ? "Code" : "Kode"}: <strong className="font-mono text-blue-700 text-base">{session?.room_code || "..."}</strong></span>
             <span className="text-sm text-gray-500">{participants.length} peserta</span>
           </div>
         </div>
@@ -234,7 +234,7 @@ export default function SessionPage({ params }: { params: { id: string } }) {
         <div className="space-y-4">
           <div className="card text-center">
             <p className="text-gray-500 text-sm mb-1">{lang === "en" ? "Participants join at" : "Peserta bergabung di"} gep-poll.vercel.app/join</p>
-            <div className="text-6xl font-bold font-mono text-blue-700 tracking-widest my-3 select-all">{session.room_code}</div>
+            <div className="text-6xl font-bold font-mono text-blue-700 tracking-widest my-3 select-all letter-spacing-widest">{session?.room_code ? session.room_code : "..."}</div>
             <p className="text-gray-400 text-sm">{participants.length} {lang === "en" ? "participants" : "peserta"}</p>
             
           </div>
