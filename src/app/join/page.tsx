@@ -78,7 +78,7 @@ function PodiumScreen({podium,finalScore:initialScore,myRank:initialRank,t,sessi
   const [finalScore,setFinalScore] = useState(initialScore)
   const [myRank,setMyRank] = useState(initialRank)
   useEffect(()=>{
-    if(!finalScore&&sessionId&&pid){
+    if(sessionId&&pid){
       ;(async()=>{
         const {data:fQs} = await supabase.from('questions').select('id,correct_option_index').eq('session_id',sessionId)
         const {data:myR} = await supabase.from('responses').select('*').eq('session_id',sessionId).eq('participant_id',pid)
