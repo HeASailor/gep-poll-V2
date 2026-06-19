@@ -15,6 +15,46 @@ const T = {
   en: { title:'GEP TrainIQ',subtitle:'Pertamina Phase 5 Training',nameLabel:'Your Full Name',namePlaceholder:'Enter your name',codeLabel:'Room Code',joinBtn:'Join',errorEmpty:'Please enter name and code.',errorNotFound:'Room code not found.',errorEnded:'Session has ended.',errorJoin:'Failed to join.',waiting:'Waiting for Trainer',ended:'Session Complete!',answered:'questions answered',backHome:'Back to Home',submitted:'Answer Submitted!',submittedDesc:'Waiting for next question...',sendAnswer:'Submit Answer',sending:'Submitting...',timesUp:"Time's Up!",canChange:'Tap to select answer',disagree:'Strongly Disagree',agree:'Strongly Agree',writeAnswer:'Write your answer...',qOf:'Question',yourScore:'Your Score',pass:'PASS',fail:'FAIL',sessionLabel:'Session',correct:'Correct!',wrong:'Wrong!',yourRank:'Your Rank',of:'of',topParticipants:'TOP PARTICIPANTS',getReady:'Get ready...' }
 }
 
+
+// Sound effects using Web Audio API
+function playSound(type: 'correct' | 'wrong' | 'tick' | 'complete') {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+    const o = ctx.createOscillator()
+    const g = ctx.createGain()
+    o.connect(g); g.connect(ctx.destination)
+    if (type === 'correct') {
+      o.frequency.setValueAtTime(523, ctx.currentTime)
+      o.frequency.setValueAtTime(659, ctx.currentTime + 0.1)
+      o.frequency.setValueAtTime(784, ctx.currentTime + 0.2)
+      g.gain.setValueAtTime(0.3, ctx.currentTime)
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5)
+      o.start(); o.stop(ctx.currentTime + 0.5)
+    } else if (type === 'wrong') {
+      o.frequency.setValueAtTime(300, ctx.currentTime)
+      o.frequency.setValueAtTime(200, ctx.currentTime + 0.15)
+      g.gain.setValueAtTime(0.3, ctx.currentTime)
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4)
+      o.start(); o.stop(ctx.currentTime + 0.4)
+    } else if (type === 'tick') {
+      o.frequency.setValueAtTime(800, ctx.currentTime)
+      g.gain.setValueAtTime(0.1, ctx.currentTime)
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05)
+      o.start(); o.stop(ctx.currentTime + 0.05)
+    } else if (type === 'complete') {
+      const notes = [523, 659, 784, 1047]
+      notes.forEach((freq, i) => {
+        const o2 = ctx.createOscillator(); const g2 = ctx.createGain()
+        o2.connect(g2); g2.connect(ctx.destination)
+        o2.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.15)
+        g2.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.15)
+        g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.3)
+        o2.start(ctx.currentTime + i * 0.15); o2.stop(ctx.currentTime + i * 0.15 + 0.3)
+      })
+    }
+  } catch(e) {}
+}
+
 function getAvatar(name: string) {
   const colors = ['#0066B3','#00A651','#ED1C24','#7C3AED','#DB2777','#D97706','#0891B2','#059669']
   const idx = name.split('').reduce((a,c) => a+c.charCodeAt(0),0) % colors.length
@@ -128,6 +168,7 @@ export default function JoinPage() {
         await calcScore(s.id,ap)
         await new Promise(resolve => setTimeout(resolve, 500))
       }
+      playSound('complete')
       setScreen('ended'); return
     }
     if(s.status==='active'&&qs&&qs.length>0){
@@ -183,6 +224,7 @@ export default function JoinPage() {
       }
       return
     }
+    if(timeLeft===6){playSound('tick')}
     const timer=setTimeout(()=>setTimeLeft(prev=>prev!==null?prev-1:null),1000)
     return ()=>clearTimeout(timer)
   },[timeLeft,currentQ,answeredQIds,participantId,session,selectedAnswer,textAnswer,hasSubmitted])
@@ -206,7 +248,7 @@ export default function JoinPage() {
     await supabase.from('responses').upsert(payload,{onConflict:'question_id,participant_id'})
     const s2=new Set(Array.from(answeredQIds)); s2.add(currentQ.id); setAnsweredQIds(s2)
     setSelectedAnswer(optionIndex); setCorrectAnswer(currentQ.correct_option_index); setShowCorrect(true); setHasSubmitted(true)
-    if(Number(optionIndex)===Number(currentQ.correct_option_index)){setShowConfetti(true);setTimeout(()=>setShowConfetti(false),3000)}
+    if(Number(optionIndex)===Number(currentQ.correct_option_index)){setShowConfetti(true);setTimeout(()=>setShowConfetti(false),3000);playSound('correct')}else{playSound('wrong')}
     setTimeout(()=>setScreen('submitted'),2500)
   }
 
