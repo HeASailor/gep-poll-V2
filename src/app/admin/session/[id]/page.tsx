@@ -278,7 +278,11 @@ export default function SessionPage({ params }: { params: { id: string } }) {
                   })}
                   {participants.length > 12 && <div className="text-white text-opacity-60 text-sm">+{participants.length-12}</div>}
                 </div>
-                <div className="text-white text-2xl font-black">{participants.length} <span className="font-normal text-opacity-60" style={{opacity:0.6}}>{lang === "en" ? "players joined" : "peserta bergabung"}</span></div>
+                <div className="text-white text-2xl font-black">{participants.length} <span className="font-normal" style={{opacity:0.6}}>{lang === "en" ? "players joined" : "peserta bergabung"}</span></div>
+                <button onClick={()=>setCurrentQ(0)} className="mt-6 px-8 py-4 rounded-2xl font-black text-white text-xl transition-all active:scale-95" style={{backgroundColor:'#E21B3C',boxShadow:'0 6px 0 #9B0000'}}>
+                  {lang === "en" ? "▶ Start Quiz" : "▶ Mulai Kuis"}
+                </button>
+                <p className="text-white text-xs mt-3" style={{opacity:0.4}}>{lang === "en" ? "All participants will see Question 1" : "Semua peserta akan melihat Soal 1"}</p>
               </div>
             </div>
           ) : (
