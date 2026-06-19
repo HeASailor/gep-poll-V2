@@ -247,7 +247,7 @@ export default function SessionPage({ params }: { params: { id: string } }) {
       {tab === 'present' && (
         <div className="space-y-0">
           {/* Kahoot-style presenter view */}
-          {!currentQ ? (
+          {(!currentQ || (session.current_question_index === 0 && !session.timer_started_at && session.status === 'active')) ? (
             /* Waiting / Lobby screen */
             <div className="rounded-2xl overflow-hidden" style={{background:'linear-gradient(135deg,#1a0533 0%,#0a1628 100%)',minHeight:'400px'}}>
               <div className="p-8 text-center">
