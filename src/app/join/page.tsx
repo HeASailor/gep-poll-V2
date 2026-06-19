@@ -124,7 +124,10 @@ export default function JoinPage() {
     if(qs) setQuestions(qs)
     if(s.status==='ended'){
       const ap=pid||participantId
-      if(ap) await calcScore(s.id,ap)
+      if(ap) {
+        await calcScore(s.id,ap)
+        await new Promise(resolve => setTimeout(resolve, 500))
+      }
       setScreen('ended'); return
     }
     if(s.status==='active'&&qs&&qs.length>0){
