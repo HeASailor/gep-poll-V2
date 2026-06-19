@@ -163,8 +163,10 @@ export default function SessionPage({ params }: { params: { id: string } }) {
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${session.status === 'active' ? 'bg-green-100 text-green-700' : session.status === 'ended' ? 'bg-gray-100 text-gray-500' : 'bg-yellow-100 text-yellow-700'}`}>
               {session.status === 'active' ? 'Aktif' : session.status === 'ended' ? 'Selesai' : 'Draft'}
             </span>
-            <span className="text-sm text-gray-500">{lang === "en" ? "Code" : "Kode"}: <strong className="font-mono text-blue-700 text-base">{session?.room_code || "..."}</strong></span>
-            <span className="text-sm text-gray-500">{participants.length} peserta</span>
+            <div className="flex flex-col items-end gap-0.5">
+              <span className="text-sm text-gray-500">{lang === "en" ? "Code" : "Kode"}: <strong className="font-mono text-blue-700 text-lg tracking-widest">{session?.room_code || "----"}</strong></span>
+              <span className="text-xs text-gray-400">{participants.length} {lang === "en" ? "participants" : "peserta"}</span>
+            </div>
           </div>
         </div>
         <LangToggle />
