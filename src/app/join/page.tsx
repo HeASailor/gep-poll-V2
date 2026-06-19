@@ -163,6 +163,14 @@ export default function JoinPage() {
   const {lang} = useLang()
   const t = T[lang as keyof typeof T]
 
+  useEffect(()=>{
+    if(typeof window !== 'undefined'){
+      const params = new URLSearchParams(window.location.search)
+      const code = params.get('code')
+      if(code) setRoomCode(code)
+    }
+  },[])
+
   const calcScore = useCallback(async (sessionId:string,pid:string) => {
     const {data:fQs} = await supabase.from('questions').select('id,correct_option_index').eq('session_id',sessionId)
     const {data:myR} = await supabase.from('responses').select('*').eq('session_id',sessionId).eq('participant_id',pid)

@@ -258,6 +258,11 @@ export default function SessionPage({ params }: { params: { id: string } }) {
                   <div className="text-blue-700 font-bold text-sm mb-3">gep-poll.vercel.app/join</div>
                   <div className="text-6xl font-black font-mono text-gray-900 tracking-widest">{session?.room_code || '...'}</div>
                   <div className="text-gray-400 text-xs mt-2">{lang === "en" ? "Room Code" : "Kode Ruangan"}</div>
+                  <div className="flex justify-center mt-3">
+                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent('https://gep-poll.vercel.app/join?code=' + (session?.room_code||''))}&bgcolor=ffffff&color=0a1628&qzone=2`}
+                      alt="QR" className="rounded-xl" width={150} height={150} />
+                  </div>
+                  <div className="text-gray-400 text-xs mt-2">{lang === "en" ? "📱 Scan to join" : "📱 Scan untuk bergabung"}</div>
                 </div>
                 <div className="flex items-center justify-center gap-3 mb-6">
                   {participants.slice(0,12).map((p:any) => {
