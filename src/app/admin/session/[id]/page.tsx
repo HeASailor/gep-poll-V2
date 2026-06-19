@@ -259,8 +259,9 @@ export default function SessionPage({ params }: { params: { id: string } }) {
                   <div className="text-6xl font-black font-mono text-gray-900 tracking-widest letter-spacing">{session?.room_code ? String(session.room_code) : '...'}</div>
                   <div className="text-gray-400 text-xs mt-2">{lang === "en" ? "Room Code" : "Kode Ruangan"}</div>
                   <div className="flex justify-center mt-3">
-                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent('https://gep-poll.vercel.app/join?code=' + (session?.room_code||''))}&bgcolor=ffffff&color=0a1628&qzone=2`}
-                      alt="QR" className="rounded-xl" width={150} height={150} />
+                    <img src={`https://quickchart.io/qr?text=${encodeURIComponent('https://gep-poll.vercel.app/join?code=' + String(session?.room_code||''))}&size=150&dark=0a1628&light=ffffff&margin=1`}
+                      alt="QR" className="rounded-xl border-2 border-gray-100 shadow" width={150} height={150}
+                      onError={(e:any)=>{e.target.style.display='none'}} />
                   </div>
                   <div className="text-gray-400 text-xs mt-2">{lang === "en" ? "📱 Scan to join" : "📱 Scan untuk bergabung"}</div>
                 </div>
