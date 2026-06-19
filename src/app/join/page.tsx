@@ -123,7 +123,7 @@ export default function JoinPage() {
     const {data:qs} = await supabase.from('questions').select('*,options(*)').eq('session_id',s.id).order('order_index')
     if(qs) setQuestions(qs)
     if(s.status==='ended'){
-      const ap=pid
+      const ap=pid||participantId
       if(ap) await calcScore(s.id,ap)
       setScreen('ended'); return
     }
