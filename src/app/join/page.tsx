@@ -74,7 +74,27 @@ function Confetti() {
   )
 }
 
-function PodiumScreen({podium,finalScore,myRank,t,onBack}:any) {
+function PodiumScreen({podium,finalScore:initialScore,myRank:initialRank,t,sessionId,pid,onBack}:any) {
+  const [finalScore,setFinalScore] = useState(initialScore)
+  const [myRank,setMyRank] = useState(initialRank)
+  useEffect(()=>{
+    if(!finalScore&&sessionId&&pid){
+      ;(async()=>{
+        const {data:fQs} = await supabase.from('questions').select('id,correct_option_index').eq('session_id',sessionId)
+        const {data:myR} = await supabase.from('responses').select('*').eq('session_id',sessionId).eq('participant_id',pid)
+        const {data:allP} = await supabase.from('participants').select('id,display_name').eq('session_id',sessionId)
+        const {data:allR} = await supabase.from('responses').select('*').eq('session_id',sessionId)
+        const qs2=fQs||[]; let correct=0
+        qs2.forEach((q:any)=>{ const r=(myR||[]).find((r:any)=>r.question_id===q.id); if(r&&Number(r.answer_index)===Number(q.correct_option_index))correct++ })
+        setFinalScore({score:correct,total:qs2.length})
+        if(allP&&allR){
+          const scores=allP.map((p:any)=>{ const pR=allR.filter((r:any)=>r.participant_id===p.id); let c=0; qs2.forEach((q:any)=>{const r=pR.find((r:any)=>r.question_id===q.id);if(r&&Number(r.answer_index)===Number(q.correct_option_index))c++}); return {id:p.id,score:c} }).sort((a:any,b:any)=>b.score-a.score)
+          setMyRank({rank:scores.findIndex((s:any)=>s.id===pid)+1,total:allP.length})
+        }
+      })()
+    }
+  },[])
+
   const [show,setShow] = useState(false)
   const [confetti,setConfetti] = useState(false)
   useEffect(()=>{ setTimeout(()=>setShow(true),200); setTimeout(()=>setConfetti(true),600); setTimeout(()=>setConfetti(false),5000) },[])
@@ -317,6 +337,7 @@ export default function JoinPage() {
 
   if(screen==='ended') return (
     <PodiumScreen podium={podium} finalScore={finalScore} myRank={myRank} t={t} lang={lang}
+      sessionId={session?.id} pid={participantId}
       onBack={()=>{setScreen('join');setSession(null);setParticipantId(null);setAnsweredQIds(new Set([]));setFinalScore(null);setMyRank(null);setPodium([])}} />
   )
 

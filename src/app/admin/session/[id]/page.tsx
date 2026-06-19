@@ -384,6 +384,60 @@ export default function SessionPage({ params }: { params: { id: string } }) {
         </div>
       )}
 
+      {session.status === 'ended' && leaderboard.length > 0 && (
+        <div className="rounded-2xl overflow-hidden mb-4" style={{background:'linear-gradient(135deg,#1a0533 0%,#0a1628 50%,#0d2a1a 100%)'}}>
+          <div className="p-6 text-center">
+            <div className="text-white text-xs uppercase tracking-widest mb-2" style={{opacity:0.6}}>GEP TrainIQ</div>
+            <h2 className="text-3xl font-black text-white mb-1">🎉 {lang === 'en' ? 'Session Complete!' : 'Sesi Selesai!'}</h2>
+            <p className="text-white text-sm mb-6" style={{opacity:0.6}}>{session.title}</p>
+            <div className="flex items-end justify-center gap-3 mb-6">
+              {[leaderboard[1], leaderboard[0], leaderboard[2]].map((p: any, i: number) => {
+                if (!p) return <div key={i} className="flex-1 max-w-24"/>
+                const colors = ['#0066B3','#00A651','#ED1C24','#7C3AED','#DB2777','#D97706','#0891B2','#059669']
+                const cidx = p.name.split('').reduce((a:number,c:string)=>a+c.charCodeAt(0),0)%colors.length
+                const initials = p.name.trim().split(' ').map((w:string)=>w[0]).join('').toUpperCase().slice(0,2)
+                const medals = ['🥈','🥇','🥉']
+                const heights = ['h-20','h-28','h-14']
+                const podBg = ['#9CA3AF','#F59E0B','#F97316']
+                return (
+                  <div key={i} className="flex flex-col items-center flex-1 max-w-28">
+                    <div className="text-2xl mb-1">{medals[i]}</div>
+                    <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-black text-lg border-4 border-white border-opacity-30 mb-2" style={{backgroundColor:colors[cidx]}}>{initials}</div>
+                    <div className="text-white font-bold text-sm w-full text-center truncate px-1 mb-1">{p.name}</div>
+                    <div className="text-white text-xs mb-3 font-mono" style={{opacity:0.7}}>{p.score}/{p.total} • {p.pct}%</div>
+                    <div className={`w-full ${heights[i]} rounded-t-2xl flex items-center justify-center text-white font-black text-2xl`} style={{backgroundColor:podBg[i]}}>{i===1?'1':i===0?'2':'3'}</div>
+                  </div>
+                )
+              })}
+            </div>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              {[{label:lang==='en'?'Players':'Peserta',value:String(leaderboard.length)},{label:lang==='en'?'Avg Score':'Rata-rata',value:Math.round(leaderboard.reduce((a:number,b:any)=>a+b.pct,0)/leaderboard.length)+'%'},{label:'Pass Rate',value:Math.round(leaderboard.filter((p:any)=>p.pct>=70).length/leaderboard.length*100)+'%'}].map((s:any)=>(
+                <div key={s.label} className="rounded-xl p-3 text-center" style={{backgroundColor:'rgba(255,255,255,0.1)'}}>
+                  <div className="text-white font-black text-xl">{s.value}</div>
+                  <div className="text-white text-xs" style={{opacity:0.6}}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {leaderboard.map((p:any,i:number)=>{
+                const colors = ['#0066B3','#00A651','#ED1C24','#7C3AED','#DB2777','#D97706','#0891B2','#059669']
+                const cidx = p.name.split('').reduce((a:number,c:string)=>a+c.charCodeAt(0),0)%colors.length
+                const initials = p.name.trim().split(' ').map((w:string)=>w[0]).join('').toUpperCase().slice(0,2)
+                return (
+                  <div key={i} className="flex items-center gap-3 p-2 rounded-xl" style={{backgroundColor:'rgba(255,255,255,0.07)'}}>
+                    <span className="text-white text-sm w-6 text-center font-bold" style={{opacity:0.6}}>{i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</span>
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0" style={{backgroundColor:colors[cidx]}}>{initials}</div>
+                    <div className="flex-1 text-white text-sm font-medium truncate text-left">{p.name}</div>
+                    <div className="text-white text-sm font-bold" style={{opacity:0.8}}>{p.score}/{p.total}</div>
+                    <div className={`text-xs font-bold px-2 py-0.5 rounded-full ${p.pct>=70?'bg-green-500 bg-opacity-30 text-green-400':'bg-red-500 bg-opacity-30 text-red-400'}`}>{p.pct}%</div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
       {tab === 'results' && (
         <div className="space-y-4">
           <div className="flex gap-4 items-center">
