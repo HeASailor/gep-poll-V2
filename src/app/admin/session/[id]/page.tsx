@@ -30,6 +30,7 @@ export default function SessionPage({ params }: { params: { id: string } }) {
   const [saving, setSaving] = useState(false)
   const [leaderboard, setLeaderboard] = useState<any[]>([])
   const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const [showLobby, setShowLobby] = useState(true)
   const { lang } = useLang()
 
   const fetchAll = useCallback(async () => {
@@ -247,7 +248,13 @@ export default function SessionPage({ params }: { params: { id: string } }) {
       {tab === 'present' && (
         <div className="space-y-0">
           {/* Kahoot-style presenter view */}
-          {(!currentQ || (session.current_question_index === 0 && !session.timer_started_at && participants.length === 0)) ? (
+          <div className="flex justify-end mb-2">
+            <button onClick={()=>{ const el = document.getElementById('presenter-view'); if(el) { if(!document.fullscreenElement){el.requestFullscreen()}else{document.exitFullscreen()} } }} className="text-xs px-3 py-1.5 rounded-lg border border-gray-300 text-gray-500 hover:bg-gray-50">
+              ⛶ {lang === 'en' ? 'Fullscreen' : 'Layar Penuh'}
+            </button>
+          </div>
+          <div id="presenter-view">
+          {showLobby ? (
             /* Waiting / Lobby screen */
             <div className="rounded-2xl overflow-hidden" style={{background:'linear-gradient(135deg,#1a0533 0%,#0a1628 100%)',minHeight:'400px'}}>
               <div className="p-8 text-center">
@@ -256,7 +263,7 @@ export default function SessionPage({ params }: { params: { id: string } }) {
                 <div className="inline-block bg-white rounded-2xl px-8 py-6 mb-6 shadow-2xl">
                   <div className="text-gray-500 text-sm font-medium mb-1">{lang === "en" ? "Join at" : "Bergabung di"}</div>
                   <div className="text-blue-700 font-bold text-sm mb-3">gep-poll.vercel.app/join</div>
-                  <div className="text-6xl font-black font-mono text-gray-900 tracking-widest letter-spacing">{session?.room_code ? String(session.room_code) : '...'}</div>
+                  <div className="text-6xl font-black font-mono text-gray-900 tracking-widest">{session?.room_code ?? "----"}</div>
                   <div className="text-gray-400 text-xs mt-2">{lang === "en" ? "Room Code" : "Kode Ruangan"}</div>
                   <div className="flex justify-center mt-3">
                     <img src={`https://quickchart.io/qr?text=${encodeURIComponent('https://gep-poll.vercel.app/join?code=' + String(session?.room_code||''))}&size=150&dark=0a1628&light=ffffff&margin=1`}
@@ -279,7 +286,7 @@ export default function SessionPage({ params }: { params: { id: string } }) {
                   {participants.length > 12 && <div className="text-white text-opacity-60 text-sm">+{participants.length-12}</div>}
                 </div>
                 <div className="text-white text-2xl font-black">{participants.length} <span className="font-normal" style={{opacity:0.6}}>{lang === "en" ? "players joined" : "peserta bergabung"}</span></div>
-                <button onClick={()=>setCurrentQ(0)} className="mt-6 px-8 py-4 rounded-2xl font-black text-white text-xl transition-all active:scale-95" style={{backgroundColor:'#E21B3C',boxShadow:'0 6px 0 #9B0000'}}>
+                <button onClick={()=>{ setCurrentQ(0); setShowLobby(false) }} className="mt-6 px-8 py-4 rounded-2xl font-black text-white text-xl transition-all active:scale-95" style={{backgroundColor:'#E21B3C',boxShadow:'0 6px 0 #9B0000'}}>
                   {lang === "en" ? "▶ Start Quiz" : "▶ Mulai Kuis"}
                 </button>
                 <p className="text-white text-xs mt-3" style={{opacity:0.4}}>{lang === "en" ? "All participants will see Question 1" : "Semua peserta akan melihat Soal 1"}</p>
@@ -362,6 +369,7 @@ export default function SessionPage({ params }: { params: { id: string } }) {
             </div>
           )}
 
+          </div>
           {/* Leaderboard */}
           <div className="mt-4">
             <button onClick={() => { fetchLeaderboard(); setShowLeaderboard(!showLeaderboard) }} className="w-full py-3 rounded-xl font-bold text-white text-sm mb-3" style={{backgroundColor:'#0a1628'}}>
