@@ -1,4 +1,4 @@
-'use client'
+join_page = r"""'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useLang, LangToggle } from '@/lib/lang'
@@ -383,3 +383,8 @@ export default function JoinPage() {
   }
   return null
 }
+"""
+
+with open('/Users/himanshu/Desktop/gep-poll/src/app/join/page.tsx', 'w') as f:
+    f.write(join_page)
+print('Done! File written cleanly.')
