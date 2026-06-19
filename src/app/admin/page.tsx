@@ -112,7 +112,8 @@ export default function AdminPage() {
     for (const s of sessions) {
       await supabase.from("responses").delete().eq("session_id", s.id)
       await supabase.from("participants").delete().eq("session_id", s.id)
-      await supabase.from("sessions").update({ status: "draft", current_question_index: 0, started_at: null, ended_at: null }).eq("id", s.id)
+      const nc = String(Math.floor(1000 + Math.random() * 9000))
+      await supabase.from("sessions").update({ status: "draft", current_question_index: 0, started_at: null, ended_at: null, room_code: nc }).eq("id", s.id)
       count++
     }
     fetchSessions()
@@ -124,7 +125,8 @@ export default function AdminPage() {
     if (!window.confirm(msg)) return
     await supabase.from("responses").delete().eq("session_id", id)
     await supabase.from("participants").delete().eq("session_id", id)
-    await supabase.from("sessions").update({ status: "draft", current_question_index: 0, started_at: null, ended_at: null }).eq("id", id)
+    const newCode = String(Math.floor(1000 + Math.random() * 9000))
+    await supabase.from("sessions").update({ status: "draft", current_question_index: 0, started_at: null, ended_at: null, room_code: newCode }).eq("id", id)
     fetchSessions()
   }
 
