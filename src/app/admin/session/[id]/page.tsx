@@ -234,7 +234,7 @@ export default function SessionPage({ params }: { params: { id: string } }) {
         <div className="space-y-4">
           <div className="card text-center">
             <p className="text-gray-500 text-sm mb-1">{lang === "en" ? "Participants join at" : "Peserta bergabung di"} gep-poll.vercel.app/join</p>
-            <div className="text-5xl font-bold font-mono text-blue-700 tracking-widest my-3">{session.room_code || "----"}</div>
+            <div className="text-6xl font-bold font-mono text-blue-700 tracking-widest my-3 select-all">{String(session.room_code || "----").padStart(4, "0")}</div>
             <p className="text-gray-400 text-sm">{participants.length} {lang === "en" ? "participants" : "peserta"}</p>
             
           </div>
