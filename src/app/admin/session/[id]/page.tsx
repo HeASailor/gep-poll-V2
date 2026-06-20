@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { useLang, LangToggle } from '@/lib/lang'
@@ -33,6 +33,7 @@ export default function SessionPage({ params }: { params: { id: string } }) {
   const [showLobby, setShowLobby] = useState(true)
   const [liveResponses, setLiveResponses] = useState<any[]>([])
   const [answeredCount, setAnsweredCount] = useState(0)
+  const currentQ = session ? questions[session?.current_question_index] : null
   const { lang } = useLang()
 
   const fetchAll = useCallback(async () => {
@@ -65,18 +66,20 @@ export default function SessionPage({ params }: { params: { id: string } }) {
     return () => clearTimeout(t)
   }, [timerRunning, timer])
 
-  useEffect(() => {
-    if (!currentQ || showLobby) { if (respIntervalRef.current) clearInterval(respIntervalRef.current); setLiveResponses([]); setAnsweredCount(0); return }
-    fetchLiveResponses()
-    respIntervalRef.current = setInterval(() => { fetchLiveResponses() }, 2000)
-    return () => { if (respIntervalRef.current) clearInterval(respIntervalRef.current) }
-  }, [currentQ, showLobby])
+  const respIntervalRef = useRef<any>(null)
 
   async function fetchLiveResponses() {
     if (!currentQ) return
     const { data: responses } = await supabase.from('responses').select('answer_index').eq('session_id', params.id).eq('question_id', currentQ.id)
     if (responses) { setAnsweredCount(responses.length); setLiveResponses(responses) }
   }
+
+  useEffect(() => {
+    if (!currentQ || showLobby) { if (respIntervalRef.current) clearInterval(respIntervalRef.current); setLiveResponses([]); setAnsweredCount(0); return }
+    fetchLiveResponses()
+    respIntervalRef.current = setInterval(() => { fetchLiveResponses() }, 2000)
+    return () => { if (respIntervalRef.current) clearInterval(respIntervalRef.current) }
+  }, [currentQ, showLobby])
 
   async function fetchLeaderboard() {
     const { data: parts } = await supabase.from('participants').select('id, display_name').eq('session_id', params.id)
@@ -160,8 +163,6 @@ export default function SessionPage({ params }: { params: { id: string } }) {
 
   if (loading) return <div className="flex items-center justify-center min-h-screen text-gray-500">Memuat...</div>
   if (!session) return <div className="p-8 text-red-500">Sesi tidak ditemukan.</div>
-
-  const currentQ = questions[session.current_question_index]
 
   return (
     <div className="max-w-5xl mx-auto p-4 py-6">
