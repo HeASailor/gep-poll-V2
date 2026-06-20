@@ -137,11 +137,17 @@ export default function AdminPage() {
       if (loginError) { setAuthError(t.confirmEmail); return }
       // Create org
       if (orgName.trim()) {
-        const slug = orgName.trim().toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Date.now()
-        const { data: newOrg } = await supabase.from('organizations').insert({ name: orgName.trim(), slug }).select().single()
-        if (newOrg) {
-          await supabase.from('profiles').upsert({ id: data.user.id, organization_id: newOrg.id, full_name: name })
-          setOrg(newOrg)
+        const slug = orgName.trim().toLowerCase().replace(/[^a-z0-9]/g, '-')
+        // Check if org already exists
+        const { data: existingOrg } = await supabase.from('organizations').select('*').eq('slug', slug).maybeSingle()
+        let finalOrg = existingOrg
+        if (!finalOrg) {
+          const { data: newOrg } = await supabase.from('organizations').insert({ name: orgName.trim(), slug }).select().single()
+          finalOrg = newOrg
+        }
+        if (finalOrg) {
+          await supabase.from('profiles').upsert({ id: data.user.id, organization_id: finalOrg.id, full_name: name })
+          setOrg(finalOrg)
         }
       }
       setUser(data.user)
