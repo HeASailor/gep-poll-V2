@@ -230,7 +230,8 @@ export default function AdminPage() {
             {isSignUp && (
               <div>
                 <label style={{display:'block',color:'rgba(255,255,255,0.6)',fontSize:'13px',fontWeight:600,marginBottom:'6px'}}>{t.inviteLabel}</label>
-                <input style={{width:'100%',backgroundColor:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:'10px',padding:'10px 14px',color:'white',fontSize:'14px',outline:'none'}} value={inviteCode} onChange={e=>setInviteCode(e.target.value)} placeholder="GEP2026" required />
+                <input style={{width:'100%',backgroundColor:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:'10px',padding:'10px 14px',color:'white',fontSize:'14px',outline:'none'}} value={inviteCode} onChange={e=>setInviteCode(e.target.value)} placeholder={lang === 'en' ? 'Ask your GEP manager' : 'Tanya manajer GEP Anda'} required />
+                <p style={{color:'rgba(255,255,255,0.3)',fontSize:'11px',marginTop:'4px',margin:'4px 0 0'}}>{'Contact your GEP project manager for the invite code'}</p>
               </div>
             )}
             {isSignUp && (
