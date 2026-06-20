@@ -142,6 +142,8 @@ export default function SessionPage({ params }: { params: { id: string } }) {
     await supabase.from('sessions').update({ current_question_index: idx, timer_started_at: null, timer_duration: questions[idx]?.timer_seconds || 30 }).eq('id', params.id)
     setTimer(questions[idx]?.timer_seconds || 30)
     setTimerRunning(false)
+    setSession((prev: any) => prev ? {...prev, current_question_index: idx, timer_started_at: null} : prev)
+    setLiveResponses([]); setAnsweredCount(0)
     console.log('Moved to question', idx + 1)
   }
 
