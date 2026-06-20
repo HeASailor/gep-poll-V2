@@ -1,112 +1,190 @@
 'use client'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useState } from 'react'
 
-export default function Home() {
-  const [lang, setLang] = useState<'id' | 'en'>('id')
+const clients = [
+  {
+    id: 'pertamina',
+    name: 'Pertamina',
+    subtitle: 'Phase 5 GEP SMART Implementation',
+    logo: '🛢️',
+    color: '#00A651',
+    status: 'active',
+    batches: [
+      { name: 'Key User', dates: '13–17 Jul 2026', count: '~80 participants', icon: '👤' },
+      { name: 'End User', dates: '20–24 Jul 2026', count: '~300 participants', icon: '👥' },
+      { name: 'Vendor', dates: '27–30 Jul 2026', count: '~1500 participants', icon: '🏢' },
+    ],
+  },
+]
 
-  const T = {
-    id: {
-      badge: 'Platform Penilaian Pelatihan Live',
-      title: 'Pertamina Training Quiz',
-      subtitle: 'Platform pre-test & post-test real-time untuk sesi pelatihan GEP SMART Phase 5',
-      join: '🙋 Bergabung sebagai Peserta',
-      login: '🎓 Login Trainer',
-      schedule: 'Jadwal Pelatihan — Juli 2026',
-      howto: 'Cara Bergabung',
-      steps: ['Klik "Bergabung sebagai Peserta"', 'Masukkan nama lengkap Anda', 'Masukkan kode ruangan dari trainer', 'Jawab pertanyaan secara live!'],
-      footer: 'Didukung oleh GEP Worldwide • Pertamina Phase 5 Change Management',
-      days: 'Hari',
-    },
-    en: {
-      badge: 'Live Training Assessment Platform',
-      title: 'Pertamina Training Quiz',
-      subtitle: 'Real-time pre-test & post-test platform for GEP SMART Phase 5 training sessions',
-      join: '🙋 Join as Participant',
-      login: '🎓 Trainer Login',
-      schedule: 'Training Schedule — July 2026',
-      howto: 'How to Join',
-      steps: ['Click "Join as Participant"', 'Enter your full name', 'Enter room code from trainer', 'Answer questions live!'],
-      footer: 'Powered by GEP Worldwide • Pertamina Phase 5 Change Management',
-      days: 'Days',
-    }
-  }
-  const t = T[lang]
+const stats = [
+  { value: '31', label: 'Training Sessions' },
+  { value: '1500+', label: 'Participants' },
+  { value: '10', label: 'Questions/Session' },
+  { value: '100%', label: 'Real-time' },
+]
+
+const features = [
+  { icon: '⚡', title: 'Live Quiz', desc: 'Real-time questions with instant feedback' },
+  { icon: '📊', title: 'Smart Reports', desc: 'Pre vs Post analysis with Excel & PPT export' },
+  { icon: '🏆', title: 'Leaderboard', desc: 'Live rankings with animated podium' },
+  { icon: '🎯', title: 'Answer Analytics', desc: 'See exactly how many picked each option' },
+  { icon: '📱', title: 'Mobile First', desc: 'Works on any device, no app needed' },
+  { icon: '🌐', title: 'Bilingual', desc: 'English & Bahasa Indonesia support' },
+]
+
+export default function HomePage() {
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20)
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Dark hero header */}
-      <div className="relative overflow-hidden" style={{backgroundColor:'#0a1628', minHeight:'420px'}}>
-        <div className="absolute inset-0 opacity-5" style={{backgroundImage:'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize:'30px 30px'}} />
-        <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-10 blur-3xl" style={{backgroundColor:'#ED1C24', transform:'translate(30%, -30%)'}} />
-        <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full opacity-10 blur-3xl" style={{backgroundColor:'#0066B3', transform:'translate(-30%, 30%)'}} />
+    <div style={{fontFamily: "'Inter', system-ui, sans-serif", backgroundColor: '#070B14', minHeight: '100vh', color: 'white'}}>
+      <style>{`
+        @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.4 } }
+        @keyframes float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
+        * { box-sizing: border-box; }
+        a:hover { opacity: 0.85 !important; }
+      `}</style>
 
-        {/* Logo bar with language toggle */}
-        <div className="relative z-10 px-6 py-4 flex items-center justify-between border-b border-white border-opacity-10">
-          <div className="flex items-center gap-2 bg-white bg-opacity-10 backdrop-blur-sm px-4 py-2 rounded-full border border-white border-opacity-20">
-            <span className="font-bold text-white text-sm tracking-wider">GEP</span>
-            <div className="w-px h-4 bg-white opacity-30" />
-            <span className="font-bold text-white text-sm tracking-wider">PERTAMINA</span>
-            <div className="w-2 h-2 rounded-full" style={{backgroundColor:'#ED1C24'}} />
+      {/* Nav */}
+      <nav style={{position:'fixed',top:0,left:0,right:0,zIndex:100,padding:'0 24px',height:'64px',display:'flex',alignItems:'center',justifyContent:'space-between',transition:'all 0.3s',backgroundColor:scrolled?'rgba(7,11,20,0.95)':'transparent',backdropFilter:scrolled?'blur(12px)':'none',borderBottom:scrolled?'1px solid rgba(255,255,255,0.08)':'none'}}>
+        <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
+          <div style={{width:'32px',height:'32px',borderRadius:'8px',background:'linear-gradient(135deg,#E21B3C,#1368CE)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px',fontWeight:900,color:'white'}}>T</div>
+          <span style={{fontWeight:800,fontSize:'18px',letterSpacing:'-0.5px'}}>GEP <span style={{color:'#E21B3C'}}>TrainIQ</span></span>
+        </div>
+        <div style={{display:'flex',gap:'12px',alignItems:'center'}}>
+          <a href="/join" style={{color:'rgba(255,255,255,0.6)',textDecoration:'none',fontSize:'14px',fontWeight:500}}>Join Session</a>
+          <a href="/admin" style={{backgroundColor:'#E21B3C',color:'white',textDecoration:'none',fontSize:'14px',fontWeight:700,padding:'8px 20px',borderRadius:'8px'}}>Trainer Login</a>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <div style={{minHeight:'100vh',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',padding:'80px 24px 60px',position:'relative',overflow:'hidden'}}>
+        <div style={{position:'absolute',inset:0,backgroundImage:'radial-gradient(circle at 50% 40%, rgba(226,27,60,0.15) 0%, transparent 60%)',pointerEvents:'none'}}/>
+        <div style={{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)',backgroundSize:'60px 60px',pointerEvents:'none'}}/>
+
+        <div style={{position:'relative',maxWidth:'800px'}}>
+          <div style={{display:'inline-flex',alignItems:'center',gap:'8px',backgroundColor:'rgba(226,27,60,0.15)',border:'1px solid rgba(226,27,60,0.3)',borderRadius:'100px',padding:'6px 16px',marginBottom:'32px'}}>
+            <div style={{width:'6px',height:'6px',borderRadius:'50%',backgroundColor:'#E21B3C',animation:'pulse 2s infinite'}}/>
+            <span style={{fontSize:'13px',color:'#E21B3C',fontWeight:600}}>Live Training Platform by GEP</span>
           </div>
-          {/* Language toggle */}
-          <div className="flex items-center gap-1 bg-white bg-opacity-10 rounded-full p-1">
-            <button onClick={() => setLang('id')} className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${lang === 'id' ? 'bg-white text-gray-800' : 'text-white'}`}>🇮🇩 ID</button>
-            <button onClick={() => setLang('en')} className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${lang === 'en' ? 'bg-white text-gray-800' : 'text-white'}`}>🇬🇧 EN</button>
+
+          <h1 style={{fontSize:'clamp(40px, 8vw, 80px)',fontWeight:900,lineHeight:1.05,letterSpacing:'-2px',marginBottom:'24px',margin:'0 0 24px 0'}}>
+            Training that feels<br/>
+            <span style={{background:'linear-gradient(135deg,#E21B3C 0%,#1368CE 50%,#26890C 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>like a game.</span>
+          </h1>
+
+          <p style={{fontSize:'18px',color:'rgba(255,255,255,0.5)',lineHeight:1.7,maxWidth:'520px',margin:'0 auto 48px'}}>
+            Real-time quiz platform for enterprise training. Kahoot-style engagement, enterprise-grade reporting.
+          </p>
+
+          <div style={{display:'flex',gap:'12px',justifyContent:'center',flexWrap:'wrap'}}>
+            <a href="/join" style={{backgroundColor:'#E21B3C',color:'white',textDecoration:'none',fontSize:'16px',fontWeight:700,padding:'14px 32px',borderRadius:'12px',boxShadow:'0 8px 24px rgba(226,27,60,0.4)',display:'inline-block'}}>
+              🙋 Join a Session
+            </a>
+            <a href="/admin" style={{backgroundColor:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',fontSize:'16px',fontWeight:600,padding:'14px 32px',borderRadius:'12px',border:'1px solid rgba(255,255,255,0.12)',display:'inline-block'}}>
+              🎓 Trainer Login →
+            </a>
           </div>
         </div>
 
-        {/* Hero content */}
-        <div className="relative z-10 max-w-3xl mx-auto px-4 py-16 text-center">
-          <div className="inline-block text-xs font-semibold px-3 py-1 rounded-full mb-6 border" style={{backgroundColor:'rgba(237,28,36,0.15)', borderColor:'rgba(237,28,36,0.3)', color:'#ff6b6b'}}>
-            🔴 LIVE — {t.badge}
-          </div>
-          <h1 className="text-4xl font-bold text-white mb-4 tracking-tight">{t.title}</h1>
-          <p className="text-gray-400 mb-10 text-lg">{t.subtitle}</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/join" className="text-white font-semibold text-lg py-4 px-8 rounded-xl transition-all" style={{backgroundColor:'#ED1C24'}}>
-              {t.join}
-            </Link>
-            <Link href="/admin" className="text-white font-semibold text-lg py-4 px-8 rounded-xl border border-white border-opacity-30 hover:bg-white hover:bg-opacity-10 transition-all">
-              {t.login}
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Training schedule */}
-      <div className="max-w-3xl mx-auto px-4 py-10">
-        <h2 className="text-center font-semibold text-gray-700 mb-6">{t.schedule}</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          {[
-            {icon:'👤', title:'Key User', color:'#0066B3', bg:'#EFF6FF', dates:'13 – 17 Jul 2026', days:'5'},
-            {icon:'👥', title:'End User', color:'#00A651', bg:'#F0FDF4', dates:'20 – 24 Jul 2026', days:'5'},
-            {icon:'🏢', title:'Vendor', color:'#ED1C24', bg:'#FFF5F5', dates:'27 – 30 Jul 2026', days:'4'},
-          ].map(s => (
-            <div key={s.title} className="rounded-xl p-5 text-center border" style={{backgroundColor:s.bg, borderColor:s.color+'33'}}>
-              <div className="text-3xl mb-2">{s.icon}</div>
-              <div className="font-bold text-base mb-1" style={{color:s.color}}>{s.title}</div>
-              <div className="text-sm text-gray-500">{s.dates}</div>
-              <div className="text-xs text-gray-400 mt-1">{s.days} {t.days}</div>
+        {/* Stats */}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'1px',backgroundColor:'rgba(255,255,255,0.08)',borderRadius:'16px',overflow:'hidden',maxWidth:'600px',width:'100%',marginTop:'80px'}}>
+          {stats.map((s,i) => (
+            <div key={i} style={{backgroundColor:'rgba(255,255,255,0.04)',padding:'20px 16px',textAlign:'center'}}>
+              <div style={{fontSize:'28px',fontWeight:900}}>{s.value}</div>
+              <div style={{fontSize:'12px',color:'rgba(255,255,255,0.4)',marginTop:'4px'}}>{s.label}</div>
             </div>
           ))}
         </div>
+      </div>
 
-        {/* How to join */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-          <h2 className="font-semibold text-gray-700 mb-5 text-center">{t.howto}</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {['👆','✍️','🔢','✅'].map((icon, i) => (
-              <div key={i} className="text-center">
-                <div className="text-2xl mb-2">{icon}</div>
-                <div className="w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center mx-auto mb-2" style={{backgroundColor:'#0a1628'}}>{i+1}</div>
-                <div className="text-xs text-gray-500">{t.steps[i]}</div>
-              </div>
-            ))}
-          </div>
+      {/* Active Clients */}
+      <div style={{padding:'80px 24px',maxWidth:'960px',margin:'0 auto'}}>
+        <div style={{marginBottom:'48px'}}>
+          <div style={{fontSize:'12px',fontWeight:700,color:'#E21B3C',letterSpacing:'2px',marginBottom:'12px',textTransform:'uppercase'}}>Active Engagements</div>
+          <h2 style={{fontSize:'36px',fontWeight:800,letterSpacing:'-1px',margin:0}}>Current Training Programs</h2>
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-8">{t.footer}</p>
+        {clients.map((client,i) => (
+          <div key={i} style={{backgroundColor:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'20px',padding:'32px',marginBottom:'16px',position:'relative',overflow:'hidden'}}>
+            <div style={{position:'absolute',top:0,left:0,right:0,height:'3px',background:`linear-gradient(90deg,${client.color},transparent)`}}/>
+            <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',flexWrap:'wrap',gap:'20px',marginBottom:'24px'}}>
+              <div style={{display:'flex',gap:'16px',alignItems:'center'}}>
+                <div style={{width:'56px',height:'56px',borderRadius:'14px',backgroundColor:`${client.color}20`,border:`1px solid ${client.color}40`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'28px'}}>
+                  {client.logo}
+                </div>
+                <div>
+                  <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'4px'}}>
+                    <h3 style={{fontSize:'22px',fontWeight:800,margin:0}}>{client.name}</h3>
+                    <span style={{fontSize:'11px',fontWeight:700,backgroundColor:`${client.color}20`,color:client.color,padding:'3px 10px',borderRadius:'100px',border:`1px solid ${client.color}40`,textTransform:'uppercase',letterSpacing:'1px'}}>● LIVE</span>
+                  </div>
+                  <p style={{color:'rgba(255,255,255,0.5)',fontSize:'14px',margin:0}}>{client.subtitle}</p>
+                </div>
+              </div>
+              <div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>
+                <a href="/join" style={{backgroundColor:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',fontSize:'14px',fontWeight:600,padding:'10px 20px',borderRadius:'10px',border:'1px solid rgba(255,255,255,0.12)',display:'inline-block'}}>
+                  Join as Participant
+                </a>
+                <a href="/admin" style={{backgroundColor:client.color,color:'white',textDecoration:'none',fontSize:'14px',fontWeight:700,padding:'10px 20px',borderRadius:'10px',display:'inline-block'}}>
+                  Trainer Dashboard →
+                </a>
+              </div>
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'12px'}}>
+              {client.batches.map((b,j) => (
+                <div key={j} style={{backgroundColor:'rgba(255,255,255,0.04)',borderRadius:'12px',padding:'16px',border:'1px solid rgba(255,255,255,0.06)'}}>
+                  <div style={{fontSize:'20px',marginBottom:'8px'}}>{b.icon}</div>
+                  <div style={{fontWeight:700,fontSize:'14px',marginBottom:'4px'}}>{b.name}</div>
+                  <div style={{color:'rgba(255,255,255,0.5)',fontSize:'12px'}}>{b.dates}</div>
+                  <div style={{color:client.color,fontSize:'12px',fontWeight:600,marginTop:'4px'}}>{b.count}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        {/* New Client CTA */}
+        <div style={{backgroundColor:'rgba(255,255,255,0.02)',border:'2px dashed rgba(255,255,255,0.12)',borderRadius:'20px',padding:'40px',textAlign:'center'}}>
+          <div style={{fontSize:'36px',marginBottom:'16px',animation:'float 3s ease-in-out infinite'}}>✦</div>
+          <h3 style={{fontSize:'22px',fontWeight:700,marginBottom:'8px',margin:'0 0 8px 0'}}>Starting a New Engagement?</h3>
+          <p style={{color:'rgba(255,255,255,0.4)',fontSize:'15px',marginBottom:'28px',lineHeight:1.6,margin:'0 0 28px 0'}}>
+            Set up your client's training program in minutes.<br/>Build questions, invite participants, run live sessions.
+          </p>
+          <a href="/admin" style={{backgroundColor:'#1368CE',color:'white',textDecoration:'none',fontSize:'15px',fontWeight:700,padding:'14px 32px',borderRadius:'12px',display:'inline-block',boxShadow:'0 8px 24px rgba(19,104,206,0.4)'}}>
+            Start New Program →
+          </a>
+        </div>
+      </div>
+
+      {/* Features */}
+      <div style={{padding:'80px 24px',maxWidth:'960px',margin:'0 auto'}}>
+        <div style={{marginBottom:'48px',textAlign:'center'}}>
+          <div style={{fontSize:'12px',fontWeight:700,color:'#1368CE',letterSpacing:'2px',marginBottom:'12px',textTransform:'uppercase'}}>What it does</div>
+          <h2 style={{fontSize:'36px',fontWeight:800,letterSpacing:'-1px',margin:0}}>Built for enterprise training</h2>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:'16px'}}>
+          {features.map((f,i) => (
+            <div key={i} style={{backgroundColor:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'14px',padding:'24px',transition:'border-color 0.2s'}}>
+              <div style={{fontSize:'28px',marginBottom:'12px'}}>{f.icon}</div>
+              <div style={{fontWeight:700,fontSize:'16px',marginBottom:'6px'}}>{f.title}</div>
+              <div style={{color:'rgba(255,255,255,0.45)',fontSize:'14px',lineHeight:1.6}}>{f.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{borderTop:'1px solid rgba(255,255,255,0.08)',padding:'32px 24px',textAlign:'center'}}>
+        <div style={{color:'rgba(255,255,255,0.25)',fontSize:'13px'}}>
+          GEP TrainIQ — Enterprise Training Platform • Built by GEP Worldwide
+        </div>
       </div>
     </div>
   )
