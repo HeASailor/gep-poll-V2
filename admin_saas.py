@@ -1,4 +1,4 @@
-'use client'
+new_admin = r"""'use client'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
@@ -86,7 +86,7 @@ export default function AdminPage() {
   const [filter, setFilter] = useState('all')
   const [activeGroups, setActiveGroups] = useState<string[]>([])
   const { lang } = useLang()
-  const t = T[lang as keyof typeof T]
+  const t = T[lang]
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -380,3 +380,7 @@ export default function AdminPage() {
     </div>
   )
 }
+"""
+with open('/Users/himanshu/Desktop/gep-poll/src/app/admin/page.tsx', 'w') as f:
+    f.write(new_admin)
+print('Done!')
