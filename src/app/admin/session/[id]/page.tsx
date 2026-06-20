@@ -28,6 +28,9 @@ export default function SessionPage({ params }: { params: { id: string } }) {
   const [qTimer, setQTimer] = useState(30)
   const [qModule, setQModule] = useState(MODULES[0])
   const [saving, setSaving] = useState(false)
+  const [uploadedQs, setUploadedQs] = useState<any[]>([])
+  const [showReview, setShowReview] = useState(false)
+  const [importing, setImporting] = useState(false)
   const [leaderboard, setLeaderboard] = useState<any[]>([])
   const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [showLobby, setShowLobby] = useState(true)
@@ -101,6 +104,62 @@ export default function SessionPage({ params }: { params: { id: string } }) {
       return { name: p.display_name, score: correct, total: qs.length, pct: Math.round((correct / qs.length) * 100) }
     }).sort((a: any, b: any) => b.score - a.score)
     setLeaderboard(scores)
+  }
+
+
+  async function handleExcelUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const script = document.createElement('script')
+    script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
+    document.head.appendChild(script)
+    await new Promise(resolve => { script.onload = resolve })
+    const XLSX = (window as any).XLSX
+    const reader = new FileReader()
+    reader.onload = (ev: any) => {
+      const wb = XLSX.read(ev.target.result, { type: 'binary' })
+      const ws = wb.Sheets[wb.SheetNames[0]]
+      const rows: any[] = XLSX.utils.sheet_to_json(ws, { header: 1 })
+      const parsed: any[] = []
+      let startRow = 0
+      for (let i = 0; i < Math.min(5, rows.length); i++) {
+        const row = rows[i].map((c: any) => String(c||'').toLowerCase())
+        if (row.some((c: string) => c.includes('question') || c.includes('pertanyaan'))) { startRow = i + 1; break }
+      }
+      for (let i = startRow; i < rows.length; i++) {
+        const row = rows[i]
+        if (!row[0]) continue
+        const opts = [row[1], row[2], row[3], row[4]].filter(Boolean)
+        if (opts.length < 2) continue
+        let correctIdx = 0
+        const correctRaw = String(row[5] || 'A').trim().toUpperCase()
+        if (correctRaw === 'B' || correctRaw === '1') correctIdx = 1
+        else if (correctRaw === 'C' || correctRaw === '2') correctIdx = 2
+        else if (correctRaw === 'D' || correctRaw === '3') correctIdx = 3
+        parsed.push({ question_text: String(row[0]).trim(), options: opts.map((o: any, i: number) => ({ option_text: String(o).trim(), option_index: i })), correct_option_index: correctIdx, timer_seconds: Number(row[6]) || 30, question_type: 'mcq' })
+      }
+      setUploadedQs(parsed)
+      setShowReview(true)
+    }
+    reader.readAsBinaryString(file)
+    e.target.value = ''
+  }
+
+  async function importQuestions() {
+    if (!uploadedQs.length) return
+    setImporting(true)
+    await supabase.from('questions').delete().eq('session_id', params.id)
+    for (let i = 0; i < uploadedQs.length; i++) {
+      const q = uploadedQs[i]
+      const { data: newQ } = await supabase.from('questions').insert({ session_id: params.id, question_text: q.question_text, question_type: q.question_type, correct_option_index: q.correct_option_index, timer_seconds: q.timer_seconds, order_index: i }).select().single()
+      if (newQ) {
+        for (const opt of q.options) {
+          await supabase.from('options').insert({ question_id: newQ.id, option_text: opt.option_text, option_index: opt.option_index })
+        }
+      }
+    }
+    setImporting(false); setShowReview(false); setUploadedQs([])
+    fetchAll()
   }
 
   async function addQuestion() {
@@ -209,6 +268,12 @@ export default function SessionPage({ params }: { params: { id: string } }) {
 
       {tab === 'build' && (
         <div className="space-y-4">
+          <div className="flex justify-end mb-3">
+            <label className="cursor-pointer btn-secondary text-sm flex items-center gap-2">
+              📥 {lang === 'en' ? 'Upload Excel' : 'Upload Excel'}
+              <input type="file" accept=".xlsx,.xls,.csv" onChange={handleExcelUpload} style={{display:'none'}} />
+            </label>
+          </div>
           <div className="card">
             <h2 className="font-semibold text-gray-700 mb-4">Tambah Pertanyaan Baru</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
@@ -527,6 +592,38 @@ export default function SessionPage({ params }: { params: { id: string } }) {
               <LiveResults responses={responses.filter((r: any) => r.question_id === q.id)} question={q} showAll={true} />
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Excel Review Modal */}
+      {showReview && uploadedQs.length > 0 && (
+        <div style={{position:'fixed',inset:0,backgroundColor:'rgba(0,0,0,0.7)',zIndex:100,display:'flex',alignItems:'center',justifyContent:'center',padding:'24px'}}>
+          <div style={{backgroundColor:'white',borderRadius:'16px',padding:'24px',maxWidth:'700px',width:'100%',maxHeight:'80vh',overflow:'auto'}}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-gray-800 text-lg">📋 {uploadedQs.length} Questions Found</h3>
+              <button onClick={()=>setShowReview(false)} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+            </div>
+            <div className="space-y-3 mb-6">
+              {uploadedQs.map((q:any,i:number)=>(
+                <div key={i} className="border border-gray-200 rounded-xl p-3">
+                  <div className="font-medium text-gray-800 text-sm mb-2">Q{i+1}: {q.question_text}</div>
+                  <div className="grid grid-cols-2 gap-1">
+                    {q.options.map((o:any,j:number)=>(
+                      <div key={j} className={`text-xs px-2 py-1 rounded-lg ${j===q.correct_option_index?'bg-green-100 text-green-700 font-semibold':'bg-gray-50 text-gray-500'}`}>
+                        {String.fromCharCode(65+j)}. {o.option_text} {j===q.correct_option_index?'✓':''}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-3">
+              <button onClick={importQuestions} disabled={importing} className="btn-primary flex-1">
+                {importing?'Importing...':'✅ Import '+uploadedQs.length+' Questions'}
+              </button>
+              <button onClick={()=>setShowReview(false)} className="btn-secondary">Cancel</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
