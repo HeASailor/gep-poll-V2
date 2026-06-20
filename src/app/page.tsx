@@ -81,7 +81,7 @@ export default function HomePage() {
           </h1>
 
           <p style={{fontSize:'18px',color:'rgba(255,255,255,0.5)',lineHeight:1.7,maxWidth:'520px',margin:'0 auto 48px'}}>
-            Real-time quiz platform for enterprise training. Kahoot-style engagement, enterprise-grade reporting.
+            Built for GEP consultants. Run live training assessments, measure knowledge gaps, and deliver client-ready reports — all in one platform.
           </p>
 
           <div style={{display:'flex',gap:'12px',justifyContent:'center',flexWrap:'wrap'}}>
