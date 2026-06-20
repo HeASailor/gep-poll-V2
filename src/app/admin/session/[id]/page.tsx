@@ -31,6 +31,8 @@ export default function SessionPage({ params }: { params: { id: string } }) {
   const [leaderboard, setLeaderboard] = useState<any[]>([])
   const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [showLobby, setShowLobby] = useState(true)
+  const [liveResponses, setLiveResponses] = useState<any[]>([])
+  const [answeredCount, setAnsweredCount] = useState(0)
   const { lang } = useLang()
 
   const fetchAll = useCallback(async () => {
@@ -62,6 +64,19 @@ export default function SessionPage({ params }: { params: { id: string } }) {
     const t = setTimeout(() => setTimer(prev => prev - 1), 1000)
     return () => clearTimeout(t)
   }, [timerRunning, timer])
+
+  useEffect(() => {
+    if (!currentQ || showLobby) { if (respIntervalRef.current) clearInterval(respIntervalRef.current); setLiveResponses([]); setAnsweredCount(0); return }
+    fetchLiveResponses()
+    respIntervalRef.current = setInterval(() => { fetchLiveResponses() }, 2000)
+    return () => { if (respIntervalRef.current) clearInterval(respIntervalRef.current) }
+  }, [currentQ, showLobby])
+
+  async function fetchLiveResponses() {
+    if (!currentQ) return
+    const { data: responses } = await supabase.from('responses').select('answer_index').eq('session_id', params.id).eq('question_id', currentQ.id)
+    if (responses) { setAnsweredCount(responses.length); setLiveResponses(responses) }
+  }
 
   async function fetchLeaderboard() {
     const { data: parts } = await supabase.from('participants').select('id, display_name').eq('session_id', params.id)
@@ -353,6 +368,36 @@ export default function SessionPage({ params }: { params: { id: string } }) {
                 )}
               </div>
 
+              {currentQ && currentQ.question_type === 'mcq' && currentQ.options && (
+                <div className="px-6 pb-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-white text-sm font-bold" style={{opacity:0.8}}>📊 {lang === 'en' ? 'Live Responses' : 'Respons Live'}</span>
+                    <span className="text-white text-sm font-black">{answeredCount}<span className="font-normal" style={{opacity:0.5}}>/{participants.length} {lang === 'en' ? 'answered' : 'menjawab'}</span></span>
+                  </div>
+                  <div className="space-y-2">
+                    {currentQ.options?.sort((a:any,b:any)=>a.option_index-b.option_index).map((o:any,i:number)=>{
+                      const COLORS = ['#E21B3C','#1368CE','#D89E00','#26890C']
+                      const ICONS = ['▲','◆','●','■']
+                      const count = liveResponses.filter((r:any) => Number(r.answer_index) === Number(o.option_index)).length
+                      const pct = participants.length > 0 ? Math.round((count / participants.length) * 100) : 0
+                      const isCorrect = Number(o.option_index) === Number(currentQ.correct_option_index)
+                      return (
+                        <div key={o.id} className="flex items-center gap-2">
+                          <div className="w-6 text-center text-sm font-bold text-white" style={{opacity:0.7}}>{ICONS[i%4]}</div>
+                          <div className="flex-1 relative h-9 rounded-lg overflow-hidden" style={{backgroundColor:'rgba(255,255,255,0.1)'}}>
+                            <div className="absolute inset-y-0 left-0 rounded-lg transition-all duration-500" style={{width:pct+'%',backgroundColor:COLORS[i%4],opacity:0.85,minWidth:count>0?'2rem':'0'}}/>
+                            <div className="absolute inset-0 flex items-center px-3 justify-between">
+                              <span className="text-white text-xs font-medium truncate" style={{maxWidth:'70%'}}>{o.option_text}{isCorrect?' ✓':''}</span>
+                              <span className="text-white text-sm font-black ml-2">{count}</span>
+                            </div>
+                          </div>
+                          <div className="w-10 text-right text-white text-xs font-bold" style={{opacity:0.7}}>{pct}%</div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
               {/* Bottom controls */}
               <div className="px-6 pb-6 flex items-center justify-between">
                 <div className="text-white text-opacity-60 text-sm">{participants.length} {lang==="en"?"players":"peserta"}</div>
