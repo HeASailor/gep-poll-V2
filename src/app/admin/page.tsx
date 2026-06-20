@@ -165,7 +165,7 @@ export default function AdminPage() {
     setCreating(true)
     const room_code = String(Math.floor(1000 + Math.random() * 9000)) + String(Date.now()).slice(-2)
     const { data } = await supabase.from('sessions').insert({
-      title: newTitle.trim(), description: newDesc.trim(),
+      title: newTitle.trim(),
       status: 'draft', current_question_index: 0,
       room_code, created_by: user.id,
       organization_id: org?.id || null
