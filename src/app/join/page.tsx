@@ -202,9 +202,12 @@ export default function JoinPage() {
     if(s.status==='active'&&qs&&qs.length>0){
       const q=qs[s.current_question_index]
       if(q){
+        const isNewQuestion = !currentQ || currentQ.id !== q.id
         setCurrentQ(q)
-        setShowCorrect(false); setCorrectAnswer(null); setHasSubmitted(false)
-        setSelectedAnswer(null); setTextAnswer(''); setTimeLeft(null)
+        if(isNewQuestion){
+          setShowCorrect(false); setCorrectAnswer(null); setHasSubmitted(false)
+          setSelectedAnswer(null); setTextAnswer(''); setTimeLeft(null)
+        }
         if(s.current_question_index===0){
           setShowCountdown(true); setCountdown(3)
           setTimeout(()=>setCountdown(2),1000)
