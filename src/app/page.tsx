@@ -19,9 +19,9 @@ const clients = [
 ]
 
 const stats = [
-  { value: '31', label: 'Training Sessions' },
-  { value: '1500+', label: 'Participants' },
-  { value: '10', label: 'Questions/Session' },
+  { value: '10+', label: 'Sessions per Program' },
+  { value: '1000+', label: 'Participants Trained' },
+  { value: '∞', label: 'Questions/Session' },
   { value: '100%', label: 'Real-time' },
 ]
 
@@ -56,7 +56,7 @@ export default function HomePage() {
       <nav style={{position:'fixed',top:0,left:0,right:0,zIndex:100,padding:'0 24px',height:'64px',display:'flex',alignItems:'center',justifyContent:'space-between',transition:'all 0.3s',backgroundColor:scrolled?'rgba(7,11,20,0.95)':'transparent',backdropFilter:scrolled?'blur(12px)':'none',borderBottom:scrolled?'1px solid rgba(255,255,255,0.08)':'none'}}>
         <div style={{display:'flex',alignItems:'center',gap:'10px'}}>
           <div style={{width:'32px',height:'32px',borderRadius:'8px',background:'linear-gradient(135deg,#E21B3C,#1368CE)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px',fontWeight:900,color:'white'}}>T</div>
-          <span style={{fontWeight:800,fontSize:'18px',letterSpacing:'-0.5px'}}>GEP <span style={{color:'#E21B3C'}}>TrainIQ</span></span>
+          <span style={{fontWeight:800,fontSize:'18px',letterSpacing:'-0.5px'}}>GEP <span style={{color:'#E21B3C', marginLeft:'4px'}}>TrainIQ</span></span>
         </div>
         <div style={{display:'flex',gap:'12px',alignItems:'center'}}>
           <a href="/join" style={{color:'rgba(255,255,255,0.6)',textDecoration:'none',fontSize:'14px',fontWeight:500}}>Join Session</a>
