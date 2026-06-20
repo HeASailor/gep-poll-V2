@@ -183,7 +183,7 @@ export default function HomePage() {
       {/* Footer */}
       <div style={{borderTop:'1px solid rgba(255,255,255,0.08)',padding:'32px 24px',textAlign:'center'}}>
         <div style={{color:'rgba(255,255,255,0.25)',fontSize:'13px'}}>
-          GEP TrainIQ — Enterprise Training Platform • Built by GEP Worldwide
+          GEP TrainIQ — Enterprise Training Platform • Built with ❤️ by Himanshu Chaudhary @ GEP Worldwide
         </div>
       </div>
     </div>
