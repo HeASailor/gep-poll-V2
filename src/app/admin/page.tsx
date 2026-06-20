@@ -53,6 +53,8 @@ export default function AdminPage() {
   const [name, setName] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
   const [inviteCode, setInviteCode] = useState('')
+  const [orgName, setOrgName] = useState('')
+  const [orgId, setOrgId] = useState<string|null>(null)
   const [authError, setAuthError] = useState('')
   const [sessions, setSessions] = useState<any[]>([])
   const [creating, setCreating] = useState(false)
@@ -71,7 +73,11 @@ export default function AdminPage() {
   }, [])
 
   async function fetchSessions() {
-    const { data } = await supabase.from('sessions').select('*').order('created_at', { ascending: true })
+    const { data: profile } = await supabase.from('profiles').select('organization_id').eq('id', (await supabase.auth.getUser()).data.user?.id || '').maybeSingle()
+    const oid = profile?.organization_id
+    let query = supabase.from('sessions').select('*').order('created_at', { ascending: true })
+    if (oid) query = query.eq('organization_id', oid)
+    const { data } = await query
     if (data) setSessions(data)
   }
 
@@ -155,6 +161,7 @@ export default function AdminPage() {
         <form onSubmit={handleAuth} className="space-y-3">
           {isSignUp && (<div><label className="label">{t.nameLabel}</label><input className="input" value={name} onChange={e => setName(e.target.value)} required /></div>)}
           {isSignUp && (<div><label className="label">{lang === 'id' ? 'Kode Undangan' : 'Invite Code'}</label><input className="input" value={inviteCode} onChange={e => setInviteCode(e.target.value)} placeholder="GEP2026" required /></div>)}
+          {isSignUp && (<div><label className="label">{lang === 'id' ? 'Nama Klien / Organisasi' : 'Client / Organization Name'}</label><input className="input" value={orgName} onChange={e => setOrgName(e.target.value)} placeholder="e.g. Pertamina, Grab, Siemens" /></div>)}
           <div><label className="label">{t.emailLabel}</label><input className="input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@gep.com" required /></div>
           <div><label className="label">{t.passLabel}</label><input className="input" type="password" value={password} onChange={e => setPassword(e.target.value)} required /></div>
           {authError && <p className="text-sm text-red-600">{authError}</p>}
