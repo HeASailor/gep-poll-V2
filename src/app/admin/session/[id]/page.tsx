@@ -66,6 +66,14 @@ export default function SessionPage({ params }: { params: { id: string } }) {
     return () => clearTimeout(t)
   }, [timerRunning, timer])
 
+  useEffect(() => {
+    if (!session?.timer_started_at) { setTimerRunning(false); return }
+    const elapsed = Math.floor((Date.now() - new Date(session.timer_started_at).getTime()) / 1000)
+    const remaining = (session.timer_duration || 30) - elapsed
+    if (remaining > 0) { setTimer(remaining); setTimerRunning(true) }
+    else { setTimer(0); setTimerRunning(false) }
+  }, [session?.timer_started_at])
+
   const respIntervalRef = useRef<any>(null)
 
   async function fetchLiveResponses() {
