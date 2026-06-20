@@ -107,6 +107,15 @@ export default function SessionPage({ params }: { params: { id: string } }) {
   }
 
 
+
+  function downloadTemplate() {
+    const csv = 'Question,Option A,Option B,Option C,Option D,Correct Answer (A/B/C/D),Timer (seconds)\nWhat is the first step in procurement?,Requisition,Invoice,Payment,Approval,A,30\nWho approves the Purchase Order?,End User,Manager,Vendor,Finance,B,30'
+    const a = document.createElement('a')
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
+    a.download = 'GEP_TrainIQ_Quiz_Template.csv'
+    a.click()
+  }
+
   async function handleExcelUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -268,7 +277,10 @@ export default function SessionPage({ params }: { params: { id: string } }) {
 
       {tab === 'build' && (
         <div className="space-y-4">
-          <div className="flex justify-end mb-3">
+          <div className="flex justify-end gap-2 mb-3">
+            <button onClick={downloadTemplate} className="btn-secondary text-sm flex items-center gap-2">
+              📄 {lang === 'en' ? 'Download Template' : 'Unduh Template'}
+            </button>
             <label className="cursor-pointer btn-secondary text-sm flex items-center gap-2">
               📥 {lang === 'en' ? 'Upload Excel' : 'Upload Excel'}
               <input type="file" accept=".xlsx,.xls,.csv" onChange={handleExcelUpload} style={{display:'none'}} />
